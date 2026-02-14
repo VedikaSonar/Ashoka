@@ -1,0 +1,247 @@
+.hero-section {
+  background-color: #f7fbf2;
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-slide-content {
+  background-color: #f7fbf2;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+}
+
+/* Custom Carousel Controls */
+.hero-carousel .carousel-control-prev-icon,
+.hero-carousel .carousel-control-next-icon {
+  background-color: #8bc34a;
+  border-radius: 50%;
+  padding: 20px;
+  background-size: 50%;
+}
+
+.hero-carousel .carousel-indicators [data-bs-target] {
+  background-color: #8bc34a;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin: 0 5px;
+}
+
+.hero-badge {
+  background-color: #e9f3df;
+  color: #111;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 5px 15px;
+  display: inline-block;
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+}
+
+.hero-title {
+  font-size: 72px;
+  font-weight: 800;
+  color: #111;
+  line-height: 1.1;
+  margin-bottom: 40px;
+}
+
+.hero-btn {
+  background-color: #8bc34a;
+  color: #fff;
+  border: none;
+  padding: 15px 35px;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.3s;
+  text-transform: uppercase;
+}
+
+.hero-btn:hover {
+  background-color: #7cb342;
+  color: #fff;
+}
+
+.hero-image-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-image {
+  max-width: 100%;
+  height: auto;
+  z-index: 1;
+}
+
+.sale-badge {
+  position: absolute;
+  top: 10%;
+  right: 15%;
+  background-color: #8bc34a;
+  color: #fff;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  /* Scalloped edge using clip-path */
+  clip-path: polygon(50% 0%, 54% 10%, 64% 8%, 66% 18%, 76% 20%, 74% 30%, 82% 35%, 78% 44%, 84% 52%, 78% 60%, 82% 69%, 72% 72%, 74% 82%, 64% 82%, 62% 92%, 52% 90%, 48% 100%, 44% 90%, 34% 92%, 32% 82%, 22% 82%, 24% 72%, 14% 69%, 18% 60%, 12% 52%, 18% 44%, 14% 35%, 24% 30%, 22% 20%, 32% 18%, 34% 8%, 44% 10%);
+}
+
+/* Category Section Styles */
+.category-section {
+  padding: 60px 0;
+}
+
+.category-card {
+  background-color: #fff;
+  border: 1px solid #eee;
+  padding: 30px 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+  height: 100%;
+  cursor: pointer;
+}
+
+.category-card:hover {
+  border-color: #8bc34a;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.category-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.icon-circle {
+  width: 90px;
+  height: 90px;
+  border: 2px dashed #8bc34a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8bc34a;
+  transition: all 0.3s ease;
+}
+
+.category-card:hover .icon-circle {
+  background-color: #8bc34a;
+  color: #fff;
+  border-style: solid;
+}
+
+.category-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 5px;
+}
+
+.category-count {
+  font-size: 14px;
+  color: #777;
+  margin: 0;
+}
+
+/* Category Navigation Arrows */
+.category-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  border: 1px solid #eee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  color: #777;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.category-nav:hover {
+  background-color: #8bc34a;
+  color: #fff;
+  border-color: #8bc34a;
+}
+
+.category-nav.prev {
+  left: -25px;
+}
+
+.category-nav.next {
+  right: -25px;
+}
+
+@media (max-width: 1200px) {
+  .category-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 991px) {
+  .category-col {
+    flex: 0 0 33.333%;
+  }
+}
+
+@media (max-width: 576px) {
+  .category-col {
+    flex: 0 0 100%;
+  }
+}
+
+.sale-badge .text {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: -5px;
+}
+
+.sale-badge .percentage {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.sale-badge .off {
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: -5px;
+}
+
+@media (max-width: 991px) {
+  .hero-title {
+    font-size: 48px;
+  }
+  .hero-section {
+    padding: 60px 0;
+    text-align: center;
+  }
+  .hero-btn {
+    margin: 0 auto;
+  }
+  .hero-image-container {
+    margin-top: 50px;
+  }
+  .sale-badge {
+    right: 5%;
+    width: 100px;
+    height: 100px;
+  }
+  .sale-badge .percentage {
+    font-size: 24px;
+  }
+}
