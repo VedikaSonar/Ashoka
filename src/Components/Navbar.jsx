@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Container, Nav, Navbar as BootstrapNavbar, NavDropdown } from 'react-bootstrap';
 import { Phone, ChevronDown, Heart, ShoppingBag, Menu, Salad } from 'lucide-react';
@@ -7,9 +7,17 @@ import './Navbar.css';
 
 const Navbar = () => {
   const location = useLocation();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <div className="navbar-wrapper">
+    <div className={`navbar-wrapper${scrolled ? ' scrolled' : ''}`}>
       {/* Top Bar */}
       <div className="top-bar bg-dark text-white py-2">
         <Container className="d-flex justify-content-between align-items-center">
