@@ -185,6 +185,82 @@
 .pagination .page-item.active .page-link {
   background-color: #8cc63f;
   border-color: #8cc63f;
+
+/* Cart & Wishlist Tables */
+.cart-table,
+.wishlist-table {
+  background-color: #fff;
+  border-color: #f0f0f0;
+}
+
+.cart-table th,
+.wishlist-table th {
+  font-weight: 600;
+  padding: 16px 20px;
+}
+
+.cart-table td,
+.wishlist-table td {
+  padding: 16px 20px;
+  vertical-align: middle;
+}
+
+.cart-img-wrapper {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fafafa;
+}
+
+.qty-control {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #e0e0e0;
+  border-radius: 999px;
+  overflow: hidden;
+  min-width: 110px;
+  justify-content: space-between;
+}
+
+.qty-btn {
+  border: none;
+  background-color: #fff;
+  padding: 6px 14px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.qty-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.qty-value {
+  min-width: 32px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.cart-remove-btn {
+  border: none;
+  background: none;
+  font-size: 18px;
+}
+
+.cart-coupon-box {
+  padding: 20px;
+  border: 1px solid #f0f0f0;
+  background-color: #fff;
+}
+
+.cart-summary-box {
+  padding: 20px;
+  border: 1px solid #f0f0f0;
+  background-color: #fff;
+}
+  border-color: #8cc63f;
 }
 
 .pagination .page-link:hover {

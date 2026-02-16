@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Table, Button, Alert, Form } from 'react-bootstrap';
+import { Container, Row, Col, Table, Button, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
 import './Product.css';
@@ -107,32 +107,6 @@ const Cart = () => {
     }
   };
 
-  const handleClearCart = async () => {
-    const token = getAuthToken();
-    if (!token) {
-      setError('Please login to clear cart');
-      return;
-    }
-    setMessage('');
-    setError('');
-    try {
-      const response = await fetch(`${API_BASE}/cart/clear`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to clear cart');
-      }
-      await loadCart();
-      setMessage('Cart cleared');
-    } catch (err) {
-      setError(err.message || 'Something went wrong while clearing cart');
-    }
-  };
-
   const items = cart && Array.isArray(cart.items) ? cart.items : [];
 
   return (
@@ -177,114 +151,143 @@ const Cart = () => {
           )}
 
           {!loading && items.length > 0 && (
-            <Row className="g-4">
-              <Col lg={8}>
-                <Table responsive bordered hover className="align-middle">
-                  <thead className="table-light">
-                    <tr>
-                      <th>Product</th>
-                      <th className="text-center">Price</th>
-                      <th className="text-center">Quantity</th>
-                      <th className="text-center">Total</th>
-                      <th className="text-center">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item) => (
-                      <tr key={item.id}>
-                        <td>
-                          <div className="d-flex align-items-center gap-3">
-                            <div
-                              className="product-img-wrapper"
-                              style={{ width: 70, height: 70 }}
-                            >
+            <>
+              <Row className="justify-content-center mb-4">
+                <Col lg={10}>
+                  <Table responsive bordered hover className="align-middle cart-table">
+                    <thead>
+                      <tr>
+                        <th className="text-center">Images</th>
+                        <th>Product</th>
+                        <th className="text-center">Unit Price</th>
+                        <th className="text-center">Quantity</th>
+                        <th className="text-center">Total</th>
+                        <th className="text-center">Remove</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((item) => (
+                        <tr key={item.id}>
+                          <td className="text-center">
+                            <div className="cart-img-wrapper mx-auto">
                               {item.product && item.product.images && item.product.images.length ? (
                                 <img
                                   src={`${API_BASE.replace('/api', '')}/${item.product.images[0].image_url}`}
                                   alt={item.product.name}
-                                  className="img-fluid product-img"
+                                  className="img-fluid"
                                 />
                               ) : (
                                 <span className="small text-muted">No Image</span>
                               )}
                             </div>
-                            <div>
-                              <Link
-                                to={`/product/${item.product_id}`}
-                                className="text-decoration-none text-dark"
-                              >
-                                <div className="fw-semibold">
-                                  {item.product ? item.product.name : 'Product'}
-                                </div>
-                              </Link>
-                              <div className="small text-muted">
-                                {item.product && item.product.category
-                                  ? item.product.category.name
-                                  : ''}
+                          </td>
+                          <td>
+                            <Link
+                              to={`/product/${item.product_id}`}
+                              className="text-decoration-none text-dark"
+                            >
+                              <div className="fw-semibold">
+                                {item.product ? item.product.name : 'Product'}
                               </div>
+                            </Link>
+                            <div className="small text-muted">
+                              {item.product && item.product.category
+                                ? item.product.category.name
+                                : ''}
                             </div>
-                          </div>
-                        </td>
-                        <td className="text-center">
-                          ${Number(item.price || 0).toFixed(2)}
-                        </td>
-                        <td className="text-center" style={{ maxWidth: 120 }}>
-                          <Form.Control
-                            type="number"
-                            min={0}
-                            value={item.quantity}
-                            onChange={(e) =>
-                              handleQuantityChange(item, Number(e.target.value || 0))
-                            }
-                          />
-                        </td>
-                        <td className="text-center">
-                          ${Number(item.itemTotal || 0).toFixed(2)}
-                        </td>
-                        <td className="text-center">
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => handleRemoveItem(item)}
-                          >
-                            <Trash2 size={16} className="me-1" />
-                            Remove
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-                <Button variant="outline-secondary" onClick={handleClearCart}>
-                  Clear Cart
-                </Button>
-              </Col>
-              <Col lg={4}>
-                <div className="product-card">
-                  <h5 className="mb-3">Cart Summary</h5>
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>Subtotal</span>
-                    <span className="fw-bold">
-                      ${cart ? Number(cart.total || 0).toFixed(2) : '0.00'}
-                    </span>
+                          </td>
+                          <td className="text-center">
+                            ${Number(item.price || 0).toFixed(2)}
+                          </td>
+                          <td className="text-center">
+                            <div className="qty-control">
+                              <button
+                                type="button"
+                                className="qty-btn"
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    item,
+                                    item.quantity > 1 ? item.quantity - 1 : 1,
+                                  )
+                                }
+                              >
+                                −
+                              </button>
+                              <span className="qty-value">{item.quantity}</span>
+                              <button
+                                type="button"
+                                className="qty-btn"
+                                onClick={() =>
+                                  handleQuantityChange(item, item.quantity + 1)
+                                }
+                              >
+                                +
+                              </button>
+                            </div>
+                          </td>
+                          <td className="text-center">
+                            ${Number(item.itemTotal || 0).toFixed(2)}
+                          </td>
+                          <td className="text-center">
+                            <button
+                              type="button"
+                              className="cart-remove-btn"
+                              onClick={() => handleRemoveItem(item)}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </Col>
+              </Row>
+
+              <Row className="justify-content-center mb-4">
+                <Col lg={6}>
+                  <div className="cart-coupon-box d-flex flex-column flex-md-row gap-3 align-items-md-center">
+                    <input
+                      type="text"
+                      className="form-control cart-coupon-input"
+                      placeholder="Coupon code"
+                      disabled
+                    />
+                    <div className="d-flex gap-2">
+                      <Button variant="outline-secondary" disabled>
+                        Apply Coupon
+                      </Button>
+                      <Button variant="outline-secondary" onClick={loadCart}>
+                        Update Cart
+                      </Button>
+                    </div>
                   </div>
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>Shipping</span>
-                    <span className="text-muted">Calculated at checkout</span>
+                </Col>
+              </Row>
+
+              <Row className="justify-content-center">
+                <Col lg={4}>
+                  <div className="cart-summary-box">
+                    <h5 className="mb-3">Cart Totals</h5>
+                    <div className="d-flex justify-content-between mb-2">
+                      <span>Subtotal</span>
+                      <span className="fw-bold">
+                        ${cart ? Number(cart.total || 0).toFixed(2) : '0.00'}
+                      </span>
+                    </div>
+                    <div className="d-flex justify-content-between mb-3">
+                      <span>Total</span>
+                      <span className="fw-bold">
+                        ${cart ? Number(cart.total || 0).toFixed(2) : '0.00'}
+                      </span>
+                    </div>
+                    <Button variant="success" className="w-100">
+                      Proceed to Checkout
+                    </Button>
                   </div>
-                  <hr />
-                  <div className="d-flex justify-content-between mb-3">
-                    <span className="fw-bold">Total</span>
-                    <span className="fw-bold text-success">
-                      ${cart ? Number(cart.total || 0).toFixed(2) : '0.00'}
-                    </span>
-                  </div>
-                  <Button variant="success" className="w-100">
-                    Proceed to Checkout
-                  </Button>
-                </div>
-              </Col>
-            </Row>
+                </Col>
+              </Row>
+            </>
           )}
         </Container>
       </section>
@@ -293,4 +296,3 @@ const Cart = () => {
 };
 
 export default Cart;
-

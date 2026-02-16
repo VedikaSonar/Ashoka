@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Alert, Button } from 'react-bootstrap';
+import { Container, Row, Col, Alert, Button, Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag, X } from 'lucide-react';
 import './Product.css';
@@ -34,6 +34,7 @@ const Wishlist = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [quantities, setQuantities] = useState({});
 
   useEffect(() => {
     const fetchWishlistProducts = async () => {
@@ -52,6 +53,15 @@ const Wishlist = () => {
         const list = Array.isArray(data.products) ? data.products : [];
         const filtered = list.filter((p) => wishlistIds.includes(p.id));
         setProducts(filtered);
+        setQuantities((prev) => {
+          const next = { ...prev };
+          filtered.forEach((p) => {
+            if (!next[p.id]) {
+              next[p.id] = 1;
+            }
+          });
+          return next;
+        });
       } catch (err) {
         setError(err.message || 'Something went wrong while loading wishlist');
       } finally {
@@ -78,7 +88,7 @@ const Wishlist = () => {
     setMessage('Removed from wishlist');
   };
 
-  const handleAddToCart = async (productId) => {
+  const handleAddToCart = async (productId, quantity = 1) => {
     setMessage('');
     setError('');
     const token = getAuthToken();
@@ -93,7 +103,7 @@ const Wishlist = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+        body: JSON.stringify({ product_id: productId, quantity }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -147,70 +157,118 @@ const Wishlist = () => {
           )}
 
           {!loading && products.length > 0 && (
-            <Row className="g-4">
-              {products.map((product) => (
-                <Col key={product.id} lg={4} md={6}>
-                  <div className="product-card h-100">
-                    <div className="d-flex justify-content-between align-items-start mb-3">
-                      <span className="text-uppercase small text-success fw-bold">
-                        Wishlist Item
-                      </span>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-light border-0"
-                        onClick={() => handleRemove(product.id)}
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                    <div className="d-flex gap-3">
-                      <div className="product-img-wrapper" style={{ flex: '0 0 120px' }}>
-                        <img
-                          src={
-                            product.images && product.images.length
-                              ? `${API_BASE.replace('/api', '')}/${product.images[0].image_url}`
-                              : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="%23f3f3f3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="14">No Image</text></svg>'
-                          }
-                          alt={product.name}
-                          className="img-fluid product-img"
-                        />
-                      </div>
-                      <div className="flex-grow-1">
-                        <Link to={`/product/${product.id}`} className="text-decoration-none text-dark">
-                          <h5 className="product-name fw-bold mb-2">{product.name}</h5>
-                        </Link>
-                        <p className="product-category text-uppercase small mb-2">
-                          {product.category && product.category.name
-                            ? product.category.name
-                            : 'CATEGORY'}
-                        </p>
-                        <div className="d-flex align-items-center gap-2 mb-3">
-                          <span className="current-price fw-bold text-success">
-                            ${Number(product.customer_price || product.wholesaler_price || 0).toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="d-flex flex-wrap gap-2">
-                          <Button
-                            size="sm"
-                            variant="success"
-                            onClick={() => handleAddToCart(product.id)}
-                          >
-                            <ShoppingBag size={16} className="me-1" />
-                            Add To Cart
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline-secondary"
-                            onClick={() => handleRemove(product.id)}
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Col>
-              ))}
+            <Row className="justify-content-center">
+              <Col lg={10}>
+                <Table responsive bordered hover className="align-middle wishlist-table">
+                  <thead>
+                    <tr>
+                      <th className="text-center">Images</th>
+                      <th>Product</th>
+                      <th className="text-center">Unit Price</th>
+                      <th className="text-center">Quantity</th>
+                      <th className="text-center">Total</th>
+                      <th className="text-center">Remove</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map((product) => {
+                      const unitPrice = Number(
+                        product.customer_price || product.wholesaler_price || 0,
+                      );
+                      const qty = quantities[product.id] || 1;
+                      return (
+                        <tr key={product.id}>
+                          <td className="text-center">
+                            <div className="cart-img-wrapper mx-auto">
+                              <img
+                                src={
+                                  product.images && product.images.length
+                                    ? `${API_BASE.replace('/api', '')}/${product.images[0].image_url}`
+                                    : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="%23f3f3f3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="14">No Image</text></svg>'
+                                }
+                                alt={product.name}
+                                className="img-fluid"
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <Link
+                              to={`/product/${product.id}`}
+                              className="text-decoration-none text-dark"
+                            >
+                              <div className="fw-semibold">{product.name}</div>
+                            </Link>
+                            <div className="small text-muted">
+                              {product.category && product.category.name
+                                ? product.category.name
+                                : 'CATEGORY'}
+                            </div>
+                          </td>
+                          <td className="text-center">
+                            ${unitPrice.toFixed(2)}
+                          </td>
+                          <td className="text-center">
+                            <div className="qty-control">
+                              <button
+                                type="button"
+                                className="qty-btn"
+                                onClick={() =>
+                                  setQuantities((prev) => ({
+                                    ...prev,
+                                    [product.id]: qty > 1 ? qty - 1 : 1,
+                                  }))
+                                }
+                              >
+                                −
+                              </button>
+                              <span className="qty-value">{qty}</span>
+                              <button
+                                type="button"
+                                className="qty-btn"
+                                onClick={() =>
+                                  setQuantities((prev) => ({
+                                    ...prev,
+                                    [product.id]: qty + 1,
+                                  }))
+                                }
+                              >
+                                +
+                              </button>
+                            </div>
+                          </td>
+                          <td className="text-center">
+                            ${(unitPrice * qty).toFixed(2)}
+                          </td>
+                          <td className="text-center">
+                            <button
+                              type="button"
+                              className="cart-remove-btn"
+                              onClick={() => handleRemove(product.id)}
+                            >
+                              <X size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </Table>
+
+                <div className="text-end mt-3">
+                  <Button
+                    variant="success"
+                    onClick={() => {
+                      products.forEach((product) => {
+                        const qty = quantities[product.id] || 1;
+                        handleAddToCart(product.id, qty);
+                      });
+                    }}
+                  >
+                    <ShoppingBag size={16} className="me-1" />
+                    Add All To Cart
+                  </Button>
+                </div>
+              </Col>
             </Row>
           )}
         </Container>
@@ -220,4 +278,3 @@ const Wishlist = () => {
 };
 
 export default Wishlist;
-
