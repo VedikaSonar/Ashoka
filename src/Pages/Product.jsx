@@ -158,10 +158,11 @@ const Product = () => {
           {/* Pagination */}
           <div className="pagination-wrapper d-flex justify-content-center mt-5">
             <Pagination>
+              <Pagination.Prev  />
               <Pagination.Item active>{1}</Pagination.Item>
               <Pagination.Item>{2}</Pagination.Item>
               <Pagination.Item>{3}</Pagination.Item>
-              <Pagination.Next />
+              <Pagination.Next  />
             </Pagination>
           </div>
         </Container>
