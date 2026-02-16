@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Alert, Button, Table } from 'react-bootstrap';
+import { Container, Row, Col, Alert, Button, Table, Pagination } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag, X } from 'lucide-react';
 import './Product.css';
@@ -35,6 +35,7 @@ const Wishlist = () => {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [quantities, setQuantities] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchWishlistProducts = async () => {
@@ -115,6 +116,14 @@ const Wishlist = () => {
     }
   };
 
+  const itemsPerPage = 5;
+  const totalItems = products.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const indexOfLastItem = safePage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentProducts = products.slice(indexOfFirstItem, indexOfLastItem);
+
   return (
     <div className="product-page">
       <section className="product-banner text-center text-white py-5">
@@ -171,7 +180,7 @@ const Wishlist = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((product) => {
+                    {currentProducts.map((product) => {
                       const unitPrice = Number(
                         product.customer_price || product.wholesaler_price || 0,
                       );
@@ -253,6 +262,41 @@ const Wishlist = () => {
                     })}
                   </tbody>
                 </Table>
+
+                {totalPages > 1 && (
+                  <div className="pagination-wrapper d-flex justify-content-center mt-3">
+                    <Pagination>
+                      <Pagination.Prev
+                        disabled={safePage === 1}
+                        onClick={() => {
+                          if (safePage > 1) {
+                            setCurrentPage(safePage - 1);
+                          }
+                        }}
+                      />
+                      {Array.from({ length: totalPages }).map((_, index) => {
+                        const pageNumber = index + 1;
+                        return (
+                          <Pagination.Item
+                            key={pageNumber}
+                            active={safePage === pageNumber}
+                            onClick={() => setCurrentPage(pageNumber)}
+                          >
+                            {pageNumber}
+                          </Pagination.Item>
+                        );
+                      })}
+                      <Pagination.Next
+                        disabled={safePage === totalPages}
+                        onClick={() => {
+                          if (safePage < totalPages) {
+                            setCurrentPage(safePage + 1);
+                          }
+                        }}
+                      />
+                    </Pagination>
+                  </div>
+                )}
 
                 <div className="text-end mt-3">
                   <Button

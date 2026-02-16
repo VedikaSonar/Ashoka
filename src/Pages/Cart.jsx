@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Table, Button, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Table, Button, Alert, Pagination } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
 import './Product.css';
@@ -20,6 +20,7 @@ const Cart = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const loadCart = async () => {
     const token = getAuthToken();
@@ -108,6 +109,13 @@ const Cart = () => {
   };
 
   const items = cart && Array.isArray(cart.items) ? cart.items : [];
+  const itemsPerPage = 5;
+  const totalItems = items.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const indexOfLastItem = safePage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <div className="product-page">
@@ -166,7 +174,7 @@ const Cart = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {items.map((item) => (
+                      {currentItems.map((item) => (
                         <tr key={item.id}>
                           <td className="text-center">
                             <div className="cart-img-wrapper mx-auto">
@@ -241,6 +249,41 @@ const Cart = () => {
                       ))}
                     </tbody>
                   </Table>
+
+                  {totalPages > 1 && (
+                    <div className="pagination-wrapper d-flex justify-content-center mt-3">
+                      <Pagination>
+                        <Pagination.Prev
+                          disabled={safePage === 1}
+                          onClick={() => {
+                            if (safePage > 1) {
+                              setCurrentPage(safePage - 1);
+                            }
+                          }}
+                        />
+                        {Array.from({ length: totalPages }).map((_, index) => {
+                          const pageNumber = index + 1;
+                          return (
+                            <Pagination.Item
+                              key={pageNumber}
+                              active={safePage === pageNumber}
+                              onClick={() => setCurrentPage(pageNumber)}
+                            >
+                              {pageNumber}
+                            </Pagination.Item>
+                          );
+                        })}
+                        <Pagination.Next
+                          disabled={safePage === totalPages}
+                          onClick={() => {
+                            if (safePage < totalPages) {
+                              setCurrentPage(safePage + 1);
+                            }
+                          }}
+                        />
+                      </Pagination>
+                    </div>
+                  )}
                 </Col>
               </Row>
 
