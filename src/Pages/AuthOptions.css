@@ -79,7 +79,8 @@
 }
 
 .auth-secondary-btn:hover {
-  background-color: #f4faec;
+  background-color: #e6fcca;
+  color: black;
 }
 
 .auth-card-footer {

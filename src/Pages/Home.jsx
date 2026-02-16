@@ -49,7 +49,48 @@ const Home = () => {
     { id: 8, name: "Read Apple", price: "USD 49.00" },
   ];
   
+  const testimonials = [
+    {
+      name: 'Ralph Edwards',
+      role: 'UI/UX Designer',
+      text: 'Lorem ipsum dolor sit amet consectetur adipiscing elit vestibulum viverra eget felis interdum fusce odio lacus.',
+    },
+    {
+      name: 'Jerome Bell',
+      role: 'Web Designer',
+      text: 'Lorem ipsum dolor sit amet consectetur adipiscing elit vestibulum viverra eget felis interdum fusce odio lacus.',
+    },
+    {
+      name: 'Annette Black',
+      role: 'Dog Trainer',
+      text: 'Lorem ipsum dolor sit amet consectetur adipiscing elit vestibulum viverra eget felis interdum fusce odio lacus.',
+    },
+    {
+      name: 'Annette Black',
+      role: 'Dog Trainer',
+      text: 'Lorem ipsum dolor sit amet consectetur adipiscing elit vestibulum viverra eget felis interdum fusce odio lacus.',
+    },
+    {
+      name: 'Annette Black',
+      role: 'Dog Trainer',
+      text: 'Lorem ipsum dolor sit amet consectetur adipiscing elit vestibulum viverra eget felis interdum fusce odio lacus.',
+    },
+    {
+      name: 'Annette Black',
+      role: 'Dog Trainer',
+      text: 'Lorem ipsum dolor sit amet consectetur adipiscing elit vestibulum viverra eget felis interdum fusce odio lacus.',
+    },
+  ];
+
+  const testimonialsPerSlide = 3;
+  const testimonialSlides = [];
+  for (let i = 0; i < testimonials.length; i += testimonialsPerSlide) {
+    testimonialSlides.push(testimonials.slice(i, i + testimonialsPerSlide));
+  }
+
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+  const [testiIndex, setTestiIndex] = useState(0);
+
   useEffect(() => {
     const target = new Date();
     target.setDate(target.getDate() + 7);
@@ -70,6 +111,16 @@ const Home = () => {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    if (testimonialSlides.length <= 1) return;
+    const id = setInterval(() => {
+      setTestiIndex((prev) =>
+        prev === testimonialSlides.length - 1 ? 0 : prev + 1
+      );
+    }, 3000);
+    return () => clearInterval(id);
+  }, [testimonialSlides.length]);
 
   return (
     <div className="home-page">
@@ -311,52 +362,71 @@ const Home = () => {
               <h2 className="testi-title mt-2">Client Feedback</h2>
             </div>
             <div className="testi-nav d-none d-md-flex gap-2">
-              <button className="testi-nav-btn" aria-label="Previous">
+              <button
+                className="testi-nav-btn"
+                aria-label="Previous"
+                onClick={() =>
+                  setTestiIndex((prev) =>
+                    testimonialSlides.length === 0
+                      ? prev
+                      : prev === 0
+                      ? testimonialSlides.length - 1
+                      : prev - 1
+                  )
+                }
+              >
                 <ChevronLeft size={18} />
               </button>
-              <button className="testi-nav-btn" aria-label="Next">
+              <button
+                className="testi-nav-btn"
+                aria-label="Next"
+                onClick={() =>
+                  setTestiIndex((prev) =>
+                    testimonialSlides.length === 0
+                      ? prev
+                      : prev === testimonialSlides.length - 1
+                      ? 0
+                      : prev + 1
+                  )
+                }
+              >
                 <ChevronRight size={18} />
               </button>
             </div>
           </div>
-          <Row className="g-4">
-            <Col lg={4} md={6}>
-              <div className="testimonial-card">
-                <div className="stars">
-                  {[...Array(4)].map((_, i) => <Star key={i} size={16} fill="#ffb300" color="#ffb300" />)}
-                  <Star size={16} color="#ffb300" />
-                </div>
-                <h5 className="testi-name">Ralph Edwards</h5>
-                <div className="testi-role">UI/UX Designer</div>
-                <p className="testi-text">Lorem ipsum dolor sit amet consectetur adipiscing elit vestibulum viverra eget felis interdum fusce odio lacus.</p>
-                <div className="testi-quote"><Quote size={28} /></div>
-              </div>
-            </Col>
-            <Col lg={4} md={6}>
-              <div className="testimonial-card">
-                <div className="stars">
-                  {[...Array(4)].map((_, i) => <Star key={i} size={16} fill="#ffb300" color="#ffb300" />)}
-                  <Star size={16} color="#ffb300" />
-                </div>
-                <h5 className="testi-name">Jerome Bell</h5>
-                <div className="testi-role">Web Designer</div>
-                <p className="testi-text">Lorem ipsum dolor sit amet consectetur adipiscing elit vestibulum viverra eget felis interdum fusce odio lacus.</p>
-                <div className="testi-quote"><Quote size={28} /></div>
-              </div>
-            </Col>
-            <Col lg={4} md={6}>
-              <div className="testimonial-card">
-                <div className="stars">
-                  {[...Array(4)].map((_, i) => <Star key={i} size={16} fill="#ffb300" color="#ffb300" />)}
-                  <Star size={16} color="#ffb300" />
-                </div>
-                <h5 className="testi-name">Annette Black</h5>
-                <div className="testi-role">Dog Trainer</div>
-                <p className="testi-text">Lorem ipsum dolor sit amet consectetur adipiscing elit vestibulum viverra eget felis interdum fusce odio lacus.</p>
-                <div className="testi-quote"><Quote size={28} /></div>
-              </div>
-            </Col>
-          </Row>
+          <Carousel
+            indicators={false}
+            controls={false}
+            interval={null}
+            activeIndex={testiIndex}
+            onSelect={(selected) => setTestiIndex(selected)}
+            className="testi-carousel"
+          >
+            {testimonialSlides.map((slide, index) => (
+              <Carousel.Item key={index}>
+                <Row className="g-4">
+                  {slide.map((t) => (
+                    <Col key={t.name} lg={4} md={6}>
+                      <div className="testimonial-card">
+                        <div className="stars">
+                          {[...Array(4)].map((_, i) => (
+                            <Star key={i} size={16} fill="#ffb300" color="#ffb300" />
+                          ))}
+                          <Star size={16} color="#ffb300" />
+                        </div>
+                        <h5 className="testi-name">{t.name}</h5>
+                        <div className="testi-role">{t.role}</div>
+                        <p className="testi-text">{t.text}</p>
+                        <div className="testi-quote">
+                          <Quote size={28} />
+                        </div>
+                      </div>
+                    </Col>
+                  ))}
+                </Row>
+              </Carousel.Item>
+            ))}
+          </Carousel>
         </Container>
       </section>
       
