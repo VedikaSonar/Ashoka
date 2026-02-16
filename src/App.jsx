@@ -11,6 +11,8 @@ import UserLogin from './Pages/UserLogin';
 import WholesalerLogin from './Pages/WholesalerLogin';
 import UserRegister from './Pages/UserRegister';
 import WholesalerRegister from './Pages/WholesalerRegister';
+import AuthOptions from './Pages/AuthOptions';
+import WholesalerDashboard from './Pages/WholesalerDashboard';
 import './App.css';
 
 function App() {

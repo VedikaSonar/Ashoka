@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Container, Nav, Navbar as BootstrapNavbar, NavDropdown } from 'react-bootstrap';
+import { Container, Nav, Navbar as BootstrapNavbar, NavDropdown, Button } from 'react-bootstrap';
 import { Phone, ChevronDown, Heart, ShoppingBag, Menu, Salad } from 'lucide-react';
 import logo from '../assets/images/ashoka logo .png';
 import './Navbar.css';
@@ -81,30 +81,33 @@ const Navbar = () => {
               >
                 Shop
               </Nav.Link>
-              <NavDropdown
-                title="Register"
-                id="register-dropdown"
-                className="fw-semibold text-dark nav-link-custom"
-              >
-                <NavDropdown.Item as={Link} to="/register">
-                  User Registration
-                </NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/wholesaler-register">
-                  Wholesaler Registration
-                </NavDropdown.Item>
-              </NavDropdown>
               <Nav.Link as={Link} to="/pages" className="fw-semibold text-dark nav-link-custom">Pages</Nav.Link>
               <Nav.Link as={Link} to="/blog" className="fw-semibold text-dark nav-link-custom">Blog</Nav.Link>
               <Nav.Link as={Link} to="/contact" className="fw-semibold text-dark nav-link-custom">Contact</Nav.Link>
             </Nav>
 
             <div className="d-flex align-items-center gap-3 mt-3 mt-lg-0">
-              <Link to="/wishlist" className="position-relative cursor-pointer text-decoration-none text-dark">
+              <Link
+                to="/wishlist"
+                className="position-relative cursor-pointer text-decoration-none text-dark"
+              >
                 <Heart size={24} />
               </Link>
-              <Link to="/cart" className="position-relative cursor-pointer text-decoration-none text-dark">
+              <Link
+                to="/cart"
+                className="position-relative cursor-pointer text-decoration-none text-dark"
+              >
                 <ShoppingBag size={24} />
               </Link>
+              <Button
+                as={Link}
+                to="/auth"
+                variant="success"
+                size="sm"
+                className="fw-semibold px-3"
+              >
+                Login / Register
+              </Button>
             </div>
           </BootstrapNavbar.Collapse>
         </Container>

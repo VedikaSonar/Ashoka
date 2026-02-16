@@ -82,7 +82,7 @@ const WholesalerLogin = () => {
       }
 
       setMessage(data.message || 'Login successful');
-      navigate('/');
+      navigate('/wholesaler-dashboard');
     } catch (err) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -150,6 +150,11 @@ const WholesalerLogin = () => {
               <span className="text-muted">Regular customer?</span>{' '}
               <Link to="/login">Login here</Link>
             </div>
+            <div className="mt-2 text-center">
+              <Link to="/auth" className="text-muted small">
+                Back to login options
+              </Link>
+            </div>
           </Col>
         </Row>
       </Container>
@@ -158,4 +163,3 @@ const WholesalerLogin = () => {
 };
 
 export default WholesalerLogin;
-
