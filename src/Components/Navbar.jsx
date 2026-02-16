@@ -73,21 +73,38 @@ const Navbar = () => {
               >
                 About
               </Nav.Link>
-              <Nav.Link as={Link} to="/shop" className="fw-semibold text-dark nav-link-custom">Shop</Nav.Link>
+              <Nav.Link 
+                as={Link} 
+                to="/shop" 
+                active={location.pathname === '/shop' || location.pathname === '/product'}
+                className="fw-semibold text-dark nav-link-custom"
+              >
+                Shop
+              </Nav.Link>
+              <NavDropdown
+                title="Register"
+                id="register-dropdown"
+                className="fw-semibold text-dark nav-link-custom"
+              >
+                <NavDropdown.Item as={Link} to="/register">
+                  User Registration
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/wholesaler-register">
+                  Wholesaler Registration
+                </NavDropdown.Item>
+              </NavDropdown>
               <Nav.Link as={Link} to="/pages" className="fw-semibold text-dark nav-link-custom">Pages</Nav.Link>
               <Nav.Link as={Link} to="/blog" className="fw-semibold text-dark nav-link-custom">Blog</Nav.Link>
               <Nav.Link as={Link} to="/contact" className="fw-semibold text-dark nav-link-custom">Contact</Nav.Link>
             </Nav>
 
             <div className="d-flex align-items-center gap-3 mt-3 mt-lg-0">
-              <div className="position-relative cursor-pointer">
+              <Link to="/wishlist" className="position-relative cursor-pointer text-decoration-none text-dark">
                 <Heart size={24} />
-                <span className="badge-custom">3</span>
-              </div>
-              <div className="position-relative cursor-pointer">
+              </Link>
+              <Link to="/cart" className="position-relative cursor-pointer text-decoration-none text-dark">
                 <ShoppingBag size={24} />
-                <span className="badge-custom">12</span>
-              </div>
+              </Link>
             </div>
           </BootstrapNavbar.Collapse>
         </Container>
