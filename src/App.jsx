@@ -24,6 +24,10 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/shop" element={<Product />} />
         <Route path="/product" element={<Product />} />
+<<<<<<< HEAD
+        <Route path="/contact" element={<Contact />} />
+        {/* Add more routes as needed */}
+=======
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/wishlist" element={<Wishlist />} />
@@ -31,8 +35,6 @@ function App() {
         <Route path="/wholesaler-login" element={<WholesalerLogin />} />
         <Route path="/register" element={<UserRegister />} />
         <Route path="/wholesaler-register" element={<WholesalerRegister />} />
-        <Route path="/auth" element={<AuthOptions />} />
-        <Route path="/wholesaler-dashboard" element={<WholesalerDashboard />} />
       </Routes>
       <Footer />
     </>

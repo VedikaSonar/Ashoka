@@ -1,0 +1,335 @@
+.about-page {
+  background-color: #f7fbf2;
+}
+
+.about-hero-banner {
+  background-image: url('https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=1200');
+  background-size: cover;
+  background-position: center;
+  padding: 70px 0;
+  position: relative;
+}
+
+.about-hero-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.about-hero-banner .container {
+  position: relative;
+  z-index: 1;
+}
+
+.about-hero-title {
+  font-size: 38px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: #fff;
+}
+
+.about-breadcrumb {
+  font-size: 14px;
+  color: #fff;
+}
+
+.about-breadcrumb .dot {
+  margin: 0 6px;
+}
+
+.about-hero-section {
+  background: linear-gradient(135deg, #e7c249 0%, #f0ee80 100%);
+  padding: 60px 0;
+}
+
+.about-hero-content .about-badge {
+  display: inline-block;
+  background-color: #e9f3df;
+  color: #111;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+
+.about-heading {
+  font-size: 40px;
+  font-weight: 800;
+  color: #272727;
+  margin-bottom: 12px;
+}
+
+.about-text {
+  font-size: 15px;
+  color: #4b4b4b;
+  max-width: 540px;
+}
+
+.about-hero-btn {
+  margin-top: 18px;
+  background-color: rgb(134, 37, 31);
+  border: none;
+  font-weight: 700;
+  padding: 12px 28px;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.about-hero-btn:hover {
+  background-color: #7cb342;
+  color: #fff;
+}
+
+.about-hero-image-wrap {
+  text-align: right;
+}
+
+.about-hero-image {
+  max-width: 100%;
+  height: auto;
+}
+
+.about-taste-section {
+  background-color: #fff;
+}
+
+.section-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 6px;
+}
+
+.section-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.about-card {
+  background-color: #fff;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 18px 16px;
+  height: 100%;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
+}
+
+.about-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 4px;
+}
+
+.about-card-text {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+.taste-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 10px;
+}
+
+.taste-text {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 14px;
+}
+
+.taste-btn {
+  background-color: rgb(134, 37, 31);
+  border: none;
+  font-weight: 700;
+  padding: 10px 24px;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.pillar-card {
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.pillar-image-wrap {
+  background-color: #fff8d8;
+  text-align: center;
+  padding: 10px;
+}
+
+.pillar-image {
+  max-width: 100%;
+  height: auto;
+}
+
+.pillar-title {
+  padding: 8px 10px 12px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #432100;
+}
+
+.about-mission-section {
+  background-color: #fdfefb;
+}
+
+.mission-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 22px 20px;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.mission-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  background: #fff3c4;
+}
+
+.mission-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 6px;
+}
+
+.mission-text {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.about-banner-section {
+  background-color: #f6d86f;
+  padding: 24px 0;
+}
+
+.about-banner-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.about-banner-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #432100;
+  margin: 0;
+}
+
+.about-banner-btn {
+  background-color: #8b4513;
+  border: none;
+  padding: 8px 22px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.about-testimonials-section {
+  background: #f7f2e8;
+}
+
+.about-testimonials-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.about-testimonials-label {
+  display: inline-block;
+  background: #eaf6df;
+  color: #7cb342;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.about-testimonials-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #432100;
+  margin-top: 10px;
+}
+
+.about-testimonial-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 18px 18px 16px;
+  position: relative;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+.about-testimonial-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.about-avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f6d86f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #432100;
+}
+
+.about-testimonial-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #432100;
+}
+
+.about-testimonial-role {
+  font-size: 12px;
+  color: #7b5a29;
+}
+
+.about-testimonial-rating {
+  margin-bottom: 6px;
+}
+
+.about-testimonial-text {
+  font-size: 13px;
+  color: #5c3a12;
+  margin: 0;
+}
+
+.about-testimonial-quote {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  color: #8bc34a;
+}
+
+@media (max-width: 767.98px) {
+  .about-hero-section {
+    text-align: center;
+  }
+
+  .about-hero-content {
+    margin-bottom: 20px;
+  }
+}
