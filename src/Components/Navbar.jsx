@@ -73,7 +73,14 @@ const Navbar = () => {
               >
                 About
               </Nav.Link>
-              <Nav.Link as={Link} to="/shop" className="fw-semibold text-dark nav-link-custom">Shop</Nav.Link>
+              <Nav.Link 
+                as={Link} 
+                to="/shop" 
+                active={location.pathname === '/shop' || location.pathname === '/product'}
+                className="fw-semibold text-dark nav-link-custom"
+              >
+                Shop
+              </Nav.Link>
               <Nav.Link as={Link} to="/pages" className="fw-semibold text-dark nav-link-custom">Pages</Nav.Link>
               <Nav.Link as={Link} to="/blog" className="fw-semibold text-dark nav-link-custom">Blog</Nav.Link>
               <Nav.Link as={Link} to="/contact" className="fw-semibold text-dark nav-link-custom">Contact</Nav.Link>
