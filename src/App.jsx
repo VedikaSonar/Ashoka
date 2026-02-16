@@ -14,6 +14,7 @@ import WholesalerRegister from './Pages/WholesalerRegister';
 import Contact from './Pages/Contact';
 import AuthOptions from './Pages/AuthOptions';
 import WholesalerDashboard from './Pages/WholesalerDashboard';
+import Checkout from './Pages/Checkout';
 import './App.css';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
         <Route path="/register" element={<UserRegister />} />
         <Route path="/wholesaler-register" element={<WholesalerRegister />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/auth" element={<AuthOptions />} />
         <Route path="/wholesaler-dashboard" element={<WholesalerDashboard />} />
       </Routes>
