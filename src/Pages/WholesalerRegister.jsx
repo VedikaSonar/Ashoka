@@ -113,7 +113,7 @@ const WholesalerRegister = () => {
       }
 
       setMessage(data.message || 'Registration submitted. Your account will be reviewed.');
-      navigate('/');
+      navigate('/wholesaler-dashboard');
     } catch (err) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -230,6 +230,11 @@ const WholesalerRegister = () => {
               <span className="text-muted">Already registered?</span>{' '}
               <Link to="/wholesaler-login">Login here</Link>
             </div>
+            <div className="mt-2 text-center">
+              <Link to="/auth" className="text-muted small">
+                Back to login options
+              </Link>
+            </div>
           </Col>
         </Row>
       </Container>
@@ -238,4 +243,3 @@ const WholesalerRegister = () => {
 };
 
 export default WholesalerRegister;
-

@@ -150,6 +150,11 @@ const UserLogin = () => {
               <span className="text-muted">Wholesaler?</span>{' '}
               <Link to="/wholesaler-login">Login here</Link>
             </div>
+            <div className="mt-2 text-center">
+              <Link to="/auth" className="text-muted small">
+                Back to login options
+              </Link>
+            </div>
           </Col>
         </Row>
       </Container>
@@ -158,4 +163,3 @@ const UserLogin = () => {
 };
 
 export default UserLogin;
-

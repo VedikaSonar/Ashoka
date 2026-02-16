@@ -11,6 +11,8 @@ import UserLogin from './Pages/UserLogin';
 import WholesalerLogin from './Pages/WholesalerLogin';
 import UserRegister from './Pages/UserRegister';
 import WholesalerRegister from './Pages/WholesalerRegister';
+import AuthOptions from './Pages/AuthOptions';
+import WholesalerDashboard from './Pages/WholesalerDashboard';
 import './App.css';
 
 function App() {
@@ -29,6 +31,8 @@ function App() {
         <Route path="/wholesaler-login" element={<WholesalerLogin />} />
         <Route path="/register" element={<UserRegister />} />
         <Route path="/wholesaler-register" element={<WholesalerRegister />} />
+        <Route path="/auth" element={<AuthOptions />} />
+        <Route path="/wholesaler-dashboard" element={<WholesalerDashboard />} />
       </Routes>
       <Footer />
     </>

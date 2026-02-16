@@ -209,6 +209,11 @@ const UserRegister = () => {
               <span className="text-muted">Already have an account?</span>{' '}
               <Link to="/login">Login here</Link>
             </div>
+            <div className="mt-2 text-center">
+              <Link to="/auth" className="text-muted small">
+                Back to login options
+              </Link>
+            </div>
           </Col>
         </Row>
       </Container>
@@ -217,4 +222,3 @@ const UserRegister = () => {
 };
 
 export default UserRegister;
-
