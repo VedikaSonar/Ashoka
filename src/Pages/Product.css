@@ -66,6 +66,14 @@
   justify-content: center;
 }
 
+.product-detail-img-wrapper {
+  overflow: hidden;
+  height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .product-img {
   max-height: 100%;
   transition: transform 0.5s ease;
