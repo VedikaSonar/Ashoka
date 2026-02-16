@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Container, Row, Col, Button, Carousel, Alert } from 'react-bootstrap';
-import { ShoppingBag, Eye, Heart } from 'lucide-react';
+import { Container, Row, Col, Button, Alert } from 'react-bootstrap';
+import { ShoppingBag, Eye, Heart, Star } from 'lucide-react';
 import './Product.css';
 
 const API_BASE = 'http://127.0.0.1:5000/api';
@@ -69,6 +69,9 @@ const ProductDetails = () => {
   const [wishlistIds, setWishlistIds] = useState(getInitialWishlist);
   const [actionMessage, setActionMessage] = useState('');
   const [actionError, setActionError] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState('description');
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const fetchRelatedProducts = async (baseProduct) => {
     setRelatedLoading(true);
@@ -107,6 +110,8 @@ const ProductDetails = () => {
         }
         const viewProduct = mapApiProductToView(data);
         setProduct(viewProduct);
+        setActiveImageIndex(0);
+        setQuantity(1);
         if (data && data.category) {
           fetchRelatedProducts(data);
         } else {
@@ -140,7 +145,7 @@ const ProductDetails = () => {
     setActionMessage(exists ? 'Removed from wishlist' : 'Added to wishlist');
   };
 
-  const handleAddToCart = async (productId) => {
+  const handleAddToCart = async (productId, qty = 1) => {
     setActionMessage('');
     setActionError('');
     const token = getAuthToken();
@@ -155,7 +160,7 @@ const ProductDetails = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+        body: JSON.stringify({ product_id: productId, quantity: qty }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -167,7 +172,7 @@ const ProductDetails = () => {
     }
   };
 
-  const handleBuyNow = async (productId) => {
+  const handleBuyNow = async (productId, qty = 1) => {
     setActionMessage('');
     setActionError('');
     const token = getAuthToken();
@@ -182,7 +187,7 @@ const ProductDetails = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+        body: JSON.stringify({ product_id: productId, quantity: qty }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -232,85 +237,312 @@ const ProductDetails = () => {
             </div>
           )}
           {!loading && !error && product && (
-            <Row className="g-4">
-              <Col md={5}>
-                <div className="product-card text-center h-100">
-                  <Carousel
-                    indicators={
-                      product.images && product.images.length > 1
-                    }
-                    controls={
-                      product.images && product.images.length > 1
-                    }
-                  >
-                    {(product.images && product.images.length > 0
-                      ? product.images
-                      : [product.image]
-                    ).map((url, index) => (
-                      <Carousel.Item key={index}>
-                        <div className="product-detail-img-wrapper position-relative mb-1">
-                          {index === 0 && product.discount && (
-                            <span className="discount-badge">
-                              {product.discount}
-                            </span>
-                          )}
+            <>
+              <Row className="g-4 align-items-start">
+                <Col md={5}>
+                  <div className="product-detail-gallery d-flex">
+                    <div className="product-detail-thumbs me-3">
+                      {(product.images && product.images.length > 0
+                        ? product.images
+                        : [product.image]
+                      ).map((url, index) => (
+                        <button
+                          type="button"
+                          key={index}
+                          className={`product-detail-thumb-btn${
+                            index === activeImageIndex ? ' active' : ''
+                          }`}
+                          onClick={() => setActiveImageIndex(index)}
+                        >
                           <img
-                            src={url}
-                            alt={product.name}
-                            className="img-fluid product-img"
+                            src={url || FALLBACK_DETAIL_IMAGE}
+                            alt={`${product.name} ${index + 1}`}
                           />
-                        </div>
-                      </Carousel.Item>
-                    ))}
-                  </Carousel>
-                </div>
-              </Col>
-              <Col md={7}>
-                <div className="product-info">
-                  <p className="product-category text-uppercase small fw-bold mb-2">
-                    {product.category}
-                  </p>
-                  <h2 className="product-name fw-bold mb-3">{product.name}</h2>
-                  <div className="product-price d-flex align-items-center gap-2 mb-3">
-                    {product.oldPrice > 0 && (
-                      <span className="old-price text-muted text-decoration-line-through">
-                        ${product.oldPrice.toFixed(2)}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="product-detail-main-img-wrapper position-relative flex-grow-1">
+                      {product.discount && (
+                        <span className="discount-badge">
+                          {product.discount}
+                        </span>
+                      )}
+                      <div className="product-detail-main-img">
+                        <img
+                          src={
+                            (product.images && product.images.length > 0
+                              ? product.images[activeImageIndex]
+                              : product.image) || FALLBACK_DETAIL_IMAGE
+                          }
+                          alt={product.name}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </Col>
+                <Col md={7}>
+                  <div className="product-info">
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                      <span className="badge-detail-status">
+                        Featured
                       </span>
-                    )}
-                    <span className="current-price fw-bold fs-4">
-                      ${product.price.toFixed(2)}
-                    </span>
-                  </div>
-                  {product.description && (
-                    <p className="mb-4">
-                      {product.description}
+                      <div className="product-detail-rating d-flex align-items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((value) => (
+                          <Star
+                            key={value}
+                            size={16}
+                            fill="#ffc107"
+                            stroke="#ffc107"
+                          />
+                        ))}
+                        <span className="small text-muted ms-1">
+                          (0 Reviews)
+                        </span>
+                      </div>
+                    </div>
+                    <p className="product-category text-uppercase small fw-bold mb-2">
+                      {product.category}
                     </p>
-                  )}
-                  <div className="d-flex flex-wrap gap-3">
-                    <Button
-                      variant="success"
-                      onClick={() => handleAddToCart(product.id)}
-                    >
-                      <ShoppingBag size={18} className="me-2" />
-                      Add To Cart
-                    </Button>
-                    <Button
-                      variant="outline-success"
-                      onClick={() => handleBuyNow(product.id)}
-                    >
-                      Buy Now
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() => handleToggleWishlist(product.id)}
-                    >
-                      <Heart size={18} className="me-2" />
-                      Add to Wishlist
-                    </Button>
+                    <h2 className="product-name fw-bold mb-3">{product.name}</h2>
+                    <div className="product-price d-flex align-items-center gap-2 mb-3">
+                      {product.oldPrice > 0 && (
+                        <span className="old-price text-muted text-decoration-line-through">
+                          ${product.oldPrice.toFixed(2)}
+                        </span>
+                      )}
+                      <span className="current-price fw-bold fs-4">
+                        ${product.price.toFixed(2)}
+                      </span>
+                    </div>
+                    {product.description && (
+                      <p className="mb-4">
+                        {product.description}
+                      </p>
+                    )}
+                    <div className="d-flex align-items-center gap-3 mb-4">
+                      <span className="small fw-semibold text-muted">
+                        Quantity
+                      </span>
+                      <div className="qty-control">
+                        <button
+                          type="button"
+                          className="qty-btn"
+                          onClick={() =>
+                            setQuantity((prev) => (prev > 1 ? prev - 1 : 1))
+                          }
+                        >
+                          −
+                        </button>
+                        <span className="qty-value">{quantity}</span>
+                        <button
+                          type="button"
+                          className="qty-btn"
+                          onClick={() =>
+                            setQuantity((prev) => prev + 1)
+                          }
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <div className="d-flex flex-wrap gap-3">
+                      <Button
+                        variant="success"
+                        onClick={() => handleAddToCart(product.id, quantity)}
+                      >
+                        <ShoppingBag size={18} className="me-2" />
+                        Add To Cart
+                      </Button>
+                      <Button
+                        variant="outline-success"
+                        onClick={() => handleBuyNow(product.id, quantity)}
+                      >
+                        Buy Now
+                      </Button>
+                      <Button
+                        variant="outline-secondary"
+                        onClick={() => handleToggleWishlist(product.id)}
+                      >
+                        <Heart size={18} className="me-2" />
+                        Add to Wishlist
+                      </Button>
+                    </div>
+                    <div className="product-detail-meta mt-4 small text-muted">
+                      <div>
+                        <span className="meta-label">SKU:</span>
+                        <span className="meta-value">N/A</span>
+                      </div>
+                      <div>
+                        <span className="meta-label">Categories:</span>
+                        <span className="meta-value">{product.category}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </Col>
-            </Row>
+                </Col>
+              </Row>
+
+              <Row className="mt-5">
+                <Col lg={12}>
+                  <div className="product-detail-tabs">
+                    <div className="product-detail-tab-headers d-flex flex-wrap">
+                      <button
+                        type="button"
+                        className={`product-detail-tab-btn${
+                          activeTab === 'description' ? ' active' : ''
+                        }`}
+                        onClick={() => setActiveTab('description')}
+                      >
+                        Description
+                      </button>
+                      <button
+                        type="button"
+                        className={`product-detail-tab-btn${
+                          activeTab === 'additional' ? ' active' : ''
+                        }`}
+                        onClick={() => setActiveTab('additional')}
+                      >
+                        Additional Information
+                      </button>
+                      <button
+                        type="button"
+                        className={`product-detail-tab-btn${
+                          activeTab === 'reviews' ? ' active' : ''
+                        }`}
+                        onClick={() => setActiveTab('reviews')}
+                      >
+                        Reviews
+                      </button>
+                    </div>
+                    <div className="product-detail-tab-body">
+                      {activeTab === 'description' && (
+                        <div className="product-detail-tab-pane">
+                          <p>
+                            {product.description ||
+                              'No description available for this product.'}
+                          </p>
+                        </div>
+                      )}
+                      {activeTab === 'additional' && (
+                        <div className="product-detail-tab-pane">
+                          <ul className="list-unstyled mb-0">
+                            <li>
+                              <span className="meta-label">Category:</span>
+                              <span className="meta-value">{product.category}</span>
+                            </li>
+                            <li>
+                              <span className="meta-label">Price:</span>
+                              <span className="meta-value">
+                                ${product.price.toFixed(2)}
+                              </span>
+                            </li>
+                          </ul>
+                        </div>
+                      )}
+                      {activeTab === 'reviews' && (
+                        <div className="product-detail-tab-pane">
+                          <h5 className="mb-4">
+                            03 reviews for "{product.name}"
+                          </h5>
+                          <div className="product-review-list mb-4">
+                            {[1, 2, 3].map((value) => (
+                              <div
+                                key={value}
+                                className="product-review-item d-flex gap-3 mb-3"
+                              >
+                                <div className="product-review-avatar">
+                                  {product.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="product-review-content">
+                                  <div className="d-flex justify-content-between mb-1">
+                                    <strong>Sample Customer</strong>
+                                    <div className="product-detail-rating d-flex align-items-center gap-1">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          size={14}
+                                          fill="#ffc107"
+                                          stroke="#ffc107"
+                                        />
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div className="small text-muted mb-1">
+                                    March 10, 2024
+                                  </div>
+                                  <p className="mb-0">
+                                    This is a sample review block to showcase how
+                                    customer feedback will appear on this page.
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="product-review-form">
+                            <h5 className="mb-3">Add a review</h5>
+                            <form
+                              onSubmit={(event) => {
+                                event.preventDefault();
+                                setActionMessage('Review submitted');
+                              }}
+                            >
+                              <div className="mb-3">
+                                <label className="form-label small">
+                                  Your review
+                                </label>
+                                <textarea
+                                  className="form-control"
+                                  rows={4}
+                                  required
+                                />
+                              </div>
+                              <Row className="g-3">
+                                <Col md={6}>
+                                  <label className="form-label small">
+                                    Your name
+                                  </label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    required
+                                  />
+                                </Col>
+                                <Col md={6}>
+                                  <label className="form-label small">
+                                    Your email
+                                  </label>
+                                  <input
+                                    type="email"
+                                    className="form-control"
+                                    required
+                                  />
+                                </Col>
+                              </Row>
+                              <div className="form-check mt-3 mb-3">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id="review-save-info"
+                                />
+                                <label
+                                  className="form-check-label small"
+                                  htmlFor="review-save-info"
+                                >
+                                  Save my name and email in this browser for
+                                  the next time I comment.
+                                </label>
+                              </div>
+                              <Button type="submit" variant="success">
+                                Submit Now
+                              </Button>
+                            </form>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+            </>
           )}
 
           {!loading && !error && (
