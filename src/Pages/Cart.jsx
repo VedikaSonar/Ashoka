@@ -281,7 +281,7 @@ const Cart = () => {
                         ${cart ? Number(cart.total || 0).toFixed(2) : '0.00'}
                       </span>
                     </div>
-                    <Button variant="success" className="w-100">
+                    <Button as={Link} to="/checkout" variant="success" className="w-100">
                       Proceed to Checkout
                     </Button>
                   </div>
