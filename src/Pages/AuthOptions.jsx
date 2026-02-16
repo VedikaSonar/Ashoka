@@ -1,15 +1,17 @@
 import React from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { User, Store } from 'lucide-react';
+import './AuthOptions.css';
 
 const AuthOptions = () => {
   return (
-    <div className="py-5">
+    <div className="auth-options-page">
       <Container>
         <Row className="justify-content-center mb-4">
           <Col lg={8} className="text-center">
-            <h1 className="mb-2">Login</h1>
-            <p className="text-muted mb-0">
+            <h1 className="auth-title">Login</h1>
+            <p className="auth-subtitle">
               Choose how you want to access your account or create a new one.
             </p>
           </Col>
@@ -17,36 +19,44 @@ const AuthOptions = () => {
 
         <Row className="g-4 justify-content-center">
           <Col md={6} lg={5}>
-            <div className="p-4 border rounded-3 h-100">
-              <h4 className="mb-2">User</h4>
-              <p className="text-muted small mb-4">
+            <div className="auth-card">
+              <div className="auth-icon-circle">
+                <User size={26} />
+              </div>
+              <h4 className="auth-card-title">User</h4>
+              <p className="auth-card-text">
                 For regular customers shopping on Ashoka.
               </p>
-              <div className="d-flex flex-column gap-2">
-                <Button as={Link} to="/login" variant="dark">
+              <div className="auth-card-actions">
+                <Button as={Link} to="/login" className="auth-primary-btn">
                   User Login
                 </Button>
-                <Button as={Link} to="/register" variant="outline-dark">
+                <Button as={Link} to="/register" className="auth-secondary-btn">
                   User Registration
                 </Button>
               </div>
+            
             </div>
           </Col>
 
           <Col md={6} lg={5}>
-            <div className="p-4 border rounded-3 h-100">
-              <h4 className="mb-2">Wholesaler</h4>
-              <p className="text-muted small mb-4">
+            <div className="auth-card">
+              <div className="auth-icon-circle">
+                <Store size={26} />
+              </div>
+              <h4 className="auth-card-title">Wholesaler</h4>
+              <p className="auth-card-text">
                 For wholesale partners and bulk purchasing.
               </p>
-              <div className="d-flex flex-column gap-2">
-                <Button as={Link} to="/wholesaler-login" variant="dark">
+              <div className="auth-card-actions">
+                <Button as={Link} to="/wholesaler-login" className="auth-primary-btn">
                   Wholesaler Login
                 </Button>
-                <Button as={Link} to="/wholesaler-register" variant="outline-dark">
+                <Button as={Link} to="/wholesaler-register" className="auth-secondary-btn">
                   Wholesaler Registration
                 </Button>
               </div>
+             
             </div>
           </Col>
         </Row>

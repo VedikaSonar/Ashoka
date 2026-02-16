@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
+import './AuthForms.css';
 
 const API_BASE = 'http://127.0.0.1:5000/api';
 
@@ -126,11 +127,12 @@ const WholesalerRegister = () => {
   };
 
   return (
-    <div className="py-5">
+    <div className="auth-form-page">
       <Container>
         <Row className="justify-content-center">
           <Col md={7} lg={6}>
-            <h2 className="mb-4 text-center">Wholesaler Registration</h2>
+            <div className="auth-form-card">
+            <h2 className="auth-form-title text-center">Wholesaler Registration</h2>
             {error && (
               <Alert variant="danger" className="mb-3">
                 {error}
@@ -234,6 +236,7 @@ const WholesalerRegister = () => {
               <Link to="/auth" className="text-muted small">
                 Back to login options
               </Link>
+            </div>
             </div>
           </Col>
         </Row>
