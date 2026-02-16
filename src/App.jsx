@@ -4,6 +4,7 @@ import Footer from './Components/Footer'
 import Home from './Pages/Home'
 import About from './Pages/About'
 import Product from './Pages/Product'
+import Contact from './Pages/Contact'
 import './App.css'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/shop" element={<Product />} />
         <Route path="/product" element={<Product />} />
+        <Route path="/contact" element={<Contact />} />
         {/* Add more routes as needed */}
       </Routes>
       <Footer />
