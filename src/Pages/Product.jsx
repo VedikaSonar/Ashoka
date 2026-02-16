@@ -14,7 +14,7 @@ const Product = () => {
       price: 12.00,
       oldPrice: 15.00,
       discount: "10% Off",
-      image: "https://img.freepik.com/free-photo/fresh-avocado-isolated-white_144627-28156.jpg"
+      image: "https://img.freepik.com/free-photo/ripe-orange-isolated-white-background_144627-16474.jpg"
     },
     {
       id: 2,
@@ -122,7 +122,7 @@ const Product = () => {
             {products.map((product) => (
               <Col key={product.id} lg={3} md={6}>
                 <div className="product-card text-center h-100">
-                  <div className="product-img-wrapper position-relative mb-4">
+                  <div className="product-img-wrapper position-relative mb-1">
                     {product.discount && (
                       <span className="discount-badge">{product.discount}</span>
                     )}

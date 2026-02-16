@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Button, Carousel, Nav } from 'react-bootstrap';
 import { ChevronRight, ChevronLeft, Wheat, Box, Container as PackageIcon, Layers, ShoppingBag, Star, Heart, Eye, Leaf, Award, ShieldCheck, Quote } from 'lucide-react';
 import productImg from '../assets/images/product 5.png';
-import Footer from '../components/Footer';
+import Footer from '../Components/Footer';
 import './Home.css';
 
 const Home = () => {
@@ -359,7 +359,7 @@ const Home = () => {
           </Row>
         </Container>
       </section>
-      <Footer />
+      
     </div>
   );
 };
