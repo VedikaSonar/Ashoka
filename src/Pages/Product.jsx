@@ -1,11 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Form, Pagination } from 'react-bootstrap';
+import { Container, Row, Col, Form, Pagination, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { LayoutGrid, List, Filter, ShoppingBag, Eye, Heart, ChevronRight } from 'lucide-react';
 import './Product.css';
 
 const API_BASE = 'http://127.0.0.1:5000/api';
 const FALLBACK_LIST_IMAGE = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23f3f3f3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="20">No Image</text></svg>';
+
+const getAuthToken = () => {
+  if (typeof localStorage === 'undefined') return null;
+  const userToken = localStorage.getItem('userToken');
+  if (userToken) return userToken;
+  const wholesalerToken = localStorage.getItem('wholesalerToken');
+  if (wholesalerToken) return wholesalerToken;
+  return null;
+};
+
+const getInitialWishlist = () => {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    const data = localStorage.getItem('wishlistIds');
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed)) return parsed;
+    return [];
+  } catch {
+    return [];
+  }
+};
 
 const mapApiProductToView = (product) => {
   const images = product.images || [];
@@ -31,6 +53,9 @@ const Product = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [wishlistIds, setWishlistIds] = useState(getInitialWishlist);
+  const [actionMessage, setActionMessage] = useState('');
+  const [actionError, setActionError] = useState('');
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -55,6 +80,90 @@ const Product = () => {
     fetchProducts();
   }, []);
 
+  const persistWishlist = (ids) => {
+    setWishlistIds(ids);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('wishlistIds', JSON.stringify(ids));
+    }
+  };
+
+  const handleToggleWishlist = (productId, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    setActionMessage('');
+    setActionError('');
+    const exists = wishlistIds.includes(productId);
+    const updated = exists
+      ? wishlistIds.filter((id) => id !== productId)
+      : [...wishlistIds, productId];
+    persistWishlist(updated);
+    setActionMessage(exists ? 'Removed from wishlist' : 'Added to wishlist');
+  };
+
+  const handleAddToCart = async (productId, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    setActionMessage('');
+    setActionError('');
+    const token = getAuthToken();
+    if (!token) {
+      setActionError('Please login as customer or wholesaler to add items to cart');
+      return;
+    }
+    try {
+      const response = await fetch(`${API_BASE}/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add item to cart');
+      }
+      setActionMessage('Item added to cart');
+    } catch (err) {
+      setActionError(err.message || 'Something went wrong while adding to cart');
+    }
+  };
+
+  const handleBuyNow = async (productId, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    setActionMessage('');
+    setActionError('');
+    const token = getAuthToken();
+    if (!token) {
+      setActionError('Please login as customer or wholesaler to buy products');
+      return;
+    }
+    try {
+      const response = await fetch(`${API_BASE}/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add item for purchase');
+      }
+      setActionMessage('Item added. You can proceed to checkout from your cart.');
+    } catch (err) {
+      setActionError(err.message || 'Something went wrong while processing buy now');
+    }
+  };
+
   return (
     <div className="product-page">
       {/* Banner Section */}
@@ -72,6 +181,16 @@ const Product = () => {
       {/* Main Content Section */}
       <section className="product-content py-5">
         <Container>
+          {actionError && (
+            <Alert variant="danger" className="mb-3">
+              {actionError}
+            </Alert>
+          )}
+          {actionMessage && (
+            <Alert variant="success" className="mb-3">
+              {actionMessage}
+            </Alert>
+          )}
           {/* Toolbar */}
           <div className="toolbar d-flex flex-wrap justify-content-between align-items-center mb-5 pb-3 border-bottom">
             <div className="item-count mb-3 mb-md-0">
@@ -122,16 +241,27 @@ const Product = () => {
                       )}
                       <img src={product.image} alt={product.name} className="img-fluid product-img" />
                       
-                      {/* Hover Actions */}
                       <div className="product-actions d-flex justify-content-center gap-2">
-                        <div className="action-btn cart-btn">
+                        <div
+                          className="action-btn cart-btn"
+                          onClick={(event) => handleAddToCart(product.id, event)}
+                        >
                           <ShoppingBag size={20} />
                         </div>
-                        <div className="action-btn view-btn">
+                        <div
+                          className="action-btn view-btn"
+                        >
                           <Eye size={20} />
                         </div>
-                        <div className="action-btn wishlist-btn">
-                          <Heart size={20} />
+                        <div
+                          className="action-btn wishlist-btn"
+                          onClick={(event) => handleToggleWishlist(product.id, event)}
+                        >
+                          <Heart
+                            size={20}
+                            color={wishlistIds.includes(product.id) ? '#ff4d4f' : '#ffffff'}
+                            fill={wishlistIds.includes(product.id) ? '#ff4d4f' : 'none'}
+                          />
                         </div>
                       </div>
                     </div>
@@ -148,6 +278,15 @@ const Product = () => {
                         <span className="current-price fw-bold">
                           ${product.price.toFixed(2)}
                         </span>
+                      </div>
+                      <div className="mt-3 d-flex justify-content-center gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-success btn-sm"
+                          onClick={(event) => handleBuyNow(product.id, event)}
+                        >
+                          Buy Now
+                        </button>
                       </div>
                     </div>
                   </div>

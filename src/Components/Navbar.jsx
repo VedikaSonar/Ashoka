@@ -99,14 +99,12 @@ const Navbar = () => {
             </Nav>
 
             <div className="d-flex align-items-center gap-3 mt-3 mt-lg-0">
-              <div className="position-relative cursor-pointer">
+              <Link to="/wishlist" className="position-relative cursor-pointer text-decoration-none text-dark">
                 <Heart size={24} />
-                <span className="badge-custom">3</span>
-              </div>
-              <div className="position-relative cursor-pointer">
+              </Link>
+              <Link to="/cart" className="position-relative cursor-pointer text-decoration-none text-dark">
                 <ShoppingBag size={24} />
-                <span className="badge-custom">12</span>
-              </div>
+              </Link>
             </div>
           </BootstrapNavbar.Collapse>
         </Container>

@@ -5,6 +5,8 @@ import Home from './Pages/Home';
 import About from './Pages/About';
 import Product from './Pages/Product';
 import ProductDetails from './Pages/ProductDetails';
+import Cart from './Pages/Cart';
+import Wishlist from './Pages/Wishlist';
 import UserLogin from './Pages/UserLogin';
 import WholesalerLogin from './Pages/WholesalerLogin';
 import UserRegister from './Pages/UserRegister';
@@ -21,6 +23,8 @@ function App() {
         <Route path="/shop" element={<Product />} />
         <Route path="/product" element={<Product />} />
         <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path="/wholesaler-login" element={<WholesalerLogin />} />
         <Route path="/register" element={<UserRegister />} />

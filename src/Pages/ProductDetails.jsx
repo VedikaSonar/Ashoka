@@ -1,11 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Container, Row, Col, Button, Carousel } from 'react-bootstrap';
+import { Container, Row, Col, Button, Carousel, Alert } from 'react-bootstrap';
 import { ShoppingBag, Eye, Heart } from 'lucide-react';
 import './Product.css';
 
 const API_BASE = 'http://127.0.0.1:5000/api';
 const FALLBACK_DETAIL_IMAGE = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"><rect width="100%" height="100%" fill="%23f3f3f3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="24">No Image</text></svg>';
+
+const getAuthToken = () => {
+  if (typeof localStorage === 'undefined') return null;
+  const userToken = localStorage.getItem('userToken');
+  if (userToken) return userToken;
+  const wholesalerToken = localStorage.getItem('wholesalerToken');
+  if (wholesalerToken) return wholesalerToken;
+  return null;
+};
+
+const getInitialWishlist = () => {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    const data = localStorage.getItem('wishlistIds');
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed)) return parsed;
+    return [];
+  } catch {
+    return [];
+  }
+};
 
 const mapApiProductToView = (product) => {
   const images = product.images || [];
@@ -44,6 +66,9 @@ const ProductDetails = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
   const [relatedError, setRelatedError] = useState('');
+  const [wishlistIds, setWishlistIds] = useState(getInitialWishlist);
+  const [actionMessage, setActionMessage] = useState('');
+  const [actionError, setActionError] = useState('');
 
   const fetchRelatedProducts = async (baseProduct) => {
     setRelatedLoading(true);
@@ -97,6 +122,78 @@ const ProductDetails = () => {
     fetchProduct();
   }, [id]);
 
+  const persistWishlist = (ids) => {
+    setWishlistIds(ids);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('wishlistIds', JSON.stringify(ids));
+    }
+  };
+
+  const handleToggleWishlist = (productId) => {
+    setActionMessage('');
+    setActionError('');
+    const exists = wishlistIds.includes(productId);
+    const updated = exists
+      ? wishlistIds.filter((pid) => pid !== productId)
+      : [...wishlistIds, productId];
+    persistWishlist(updated);
+    setActionMessage(exists ? 'Removed from wishlist' : 'Added to wishlist');
+  };
+
+  const handleAddToCart = async (productId) => {
+    setActionMessage('');
+    setActionError('');
+    const token = getAuthToken();
+    if (!token) {
+      setActionError('Please login as customer or wholesaler to add items to cart');
+      return;
+    }
+    try {
+      const response = await fetch(`${API_BASE}/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add item to cart');
+      }
+      setActionMessage('Item added to cart');
+    } catch (err) {
+      setActionError(err.message || 'Something went wrong while adding to cart');
+    }
+  };
+
+  const handleBuyNow = async (productId) => {
+    setActionMessage('');
+    setActionError('');
+    const token = getAuthToken();
+    if (!token) {
+      setActionError('Please login as customer or wholesaler to buy products');
+      return;
+    }
+    try {
+      const response = await fetch(`${API_BASE}/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add item for purchase');
+      }
+      setActionMessage('Item added. You can proceed to checkout from your cart.');
+    } catch (err) {
+      setActionError(err.message || 'Something went wrong while processing buy now');
+    }
+  };
+
   return (
     <div className="product-page">
       <section className="product-banner text-center text-white py-5">
@@ -114,6 +211,16 @@ const ProductDetails = () => {
 
       <section className="product-content py-5">
         <Container>
+          {actionError && (
+            <Alert variant="danger" className="mb-3">
+              {actionError}
+            </Alert>
+          )}
+          {actionMessage && (
+            <Alert variant="success" className="mb-3">
+              {actionMessage}
+            </Alert>
+          )}
           {loading && (
             <div className="text-center py-5">
               <span>Loading product...</span>
@@ -180,14 +287,23 @@ const ProductDetails = () => {
                     </p>
                   )}
                   <div className="d-flex flex-wrap gap-3">
-                    <Button variant="success">
+                    <Button
+                      variant="success"
+                      onClick={() => handleAddToCart(product.id)}
+                    >
                       <ShoppingBag size={18} className="me-2" />
                       Add To Cart
                     </Button>
-                    <Button variant="outline-success">
+                    <Button
+                      variant="outline-success"
+                      onClick={() => handleBuyNow(product.id)}
+                    >
                       Buy Now
                     </Button>
-                    <Button variant="outline-secondary">
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => handleToggleWishlist(product.id)}
+                    >
                       <Heart size={18} className="me-2" />
                       Add to Wishlist
                     </Button>
