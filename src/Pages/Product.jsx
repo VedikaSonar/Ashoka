@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Container, Row, Col, Form, Pagination } from 'react-bootstrap';
 import { LayoutGrid, List, Filter, ShoppingBag, Eye, Heart, ChevronRight } from 'lucide-react';
 import './Product.css';
 
 const Product = () => {
-  const [viewMode, setViewMode] = useState('grid');
-
   const products = [
     {
       id: 1,

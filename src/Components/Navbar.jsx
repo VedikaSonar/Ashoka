@@ -81,6 +81,18 @@ const Navbar = () => {
               >
                 Shop
               </Nav.Link>
+              <NavDropdown
+                title="Register"
+                id="register-dropdown"
+                className="fw-semibold text-dark nav-link-custom"
+              >
+                <NavDropdown.Item as={Link} to="/register">
+                  User Registration
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/wholesaler-register">
+                  Wholesaler Registration
+                </NavDropdown.Item>
+              </NavDropdown>
               <Nav.Link as={Link} to="/pages" className="fw-semibold text-dark nav-link-custom">Pages</Nav.Link>
               <Nav.Link as={Link} to="/blog" className="fw-semibold text-dark nav-link-custom">Blog</Nav.Link>
               <Nav.Link as={Link} to="/contact" className="fw-semibold text-dark nav-link-custom">Contact</Nav.Link>
