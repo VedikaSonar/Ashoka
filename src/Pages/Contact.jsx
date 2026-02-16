@@ -80,23 +80,35 @@ const Contact = () => {
                 <div className="contact-info">
                   <div className="contact-info-line">
                     <MapPin size={18} />
-                    <span>457 Washington Ave, Manchester, Kentucky 39495</span>
+                    <span>
+                      GAT NO 1567, Near Shelar Crane Service Shelarvasti,
+                      Chikhali, Maharashtra – 411062
+                    </span>
+                  </div>
+                  <div className="contact-info-line">
+                    <MapPin size={18} />
+                    <span>
+                      Nano Spaces, ‘C’ Wing, Flat No. C-402, Near D.Y. Patil
+                      College, Ravet, Pune – 412101
+                    </span>
                   </div>
                   <div className="contact-info-line">
                     <Phone size={18} />
-                    <span>+1 718-2800 NAUL</span>
+                    <span>Contact: +91 99709 30890 | +91 88881 88194</span>
                   </div>
                   <div className="contact-info-line">
                     <Phone size={18} />
-                    <span>+984 722 44 293</span>
+                    <span>Customer Care: +91 77410 90767</span>
                   </div>
                   <div className="contact-info-line">
                     <Mail size={18} />
-                    <span>support@ashokaproducts.com</span>
+                    <span>
+                      ashokproducts.sales@gmail.com, jaydeepthakur55@gmail.com
+                    </span>
                   </div>
                   <div className="contact-info-line">
                     <Clock size={18} />
-                    <span>Privacy Policy</span>
+                    <span>Mon–Sat: 09:00 AM – 07:00 PM | Sun: Closed</span>
                   </div>
                 </div>
               </div>

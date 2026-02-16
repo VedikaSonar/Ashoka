@@ -23,10 +23,14 @@ const Navbar = () => {
         <Container className="d-flex justify-content-between align-items-center">
           <div className="top-bar-left d-flex align-items-center gap-2 small">
             <Phone size={14} />
-            <span>+380961381876</span>
+            <span>+91 99709 30890 | +91 88881 88194</span>
           </div>
           <div className="top-bar-center text-uppercase small d-none d-md-block">
-            TAKE CARE OF YOUR Health <span className="text-success fw-bold">25% OFF</span> USE CODE " <span className="fw-bold">DOFIX03</span> "
+            CUSTOMER CARE:{' '}
+            <span className="fw-bold">+91 77410 90767</span>
+            {'  •  '}
+            EMAIL:{' '}
+            <span className="fw-bold">ashokproducts.sales@gmail.com</span>
           </div>
           <div className="top-bar-right d-flex gap-3 small">
             <div className="d-flex align-items-center gap-1 cursor-pointer">
