@@ -1,9 +1,67 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Button, Carousel, Nav } from 'react-bootstrap';
+import { Container, Row, Col, Button, Carousel, Nav, Alert, Spinner } from 'react-bootstrap';
 import { ChevronRight, ChevronLeft, Wheat, Box, Container as PackageIcon, Layers, ShoppingBag, Star, Heart, Eye, Leaf, Award, ShieldCheck, Quote } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import productImg from '../assets/images/product 5.png';
 import Footer from '../Components/Footer';
 import './Home.css';
+
+const API_BASE = 'http://127.0.0.1:5000/api';
+
+const FALLBACK_CARD_IMAGE = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23f3f3f3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="18">No Image</text></svg>';
+
+const getAuthToken = () => {
+  if (typeof localStorage === 'undefined') return null;
+  const userToken = localStorage.getItem('userToken');
+  if (userToken) return userToken;
+  const wholesalerToken = localStorage.getItem('wholesalerToken');
+  if (wholesalerToken) return wholesalerToken;
+  return null;
+};
+
+const getInitialWishlist = () => {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    const data = localStorage.getItem('wishlistIds');
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed)) return parsed;
+    return [];
+  } catch {
+    return [];
+  }
+};
+
+const buildImageUrl = (imagePath) => {
+  if (!imagePath) return FALLBACK_CARD_IMAGE;
+  if (typeof imagePath !== 'string') return FALLBACK_CARD_IMAGE;
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  const baseUrl = API_BASE.replace('/api', '');
+  const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  return `${baseUrl}${normalizedPath}`;
+};
+
+const mapApiProductToCard = (product) => {
+  const images = product.images || [];
+  const primaryImage = images.find((img) => img.is_primary) || images[0];
+  const imageUrl = primaryImage ? buildImageUrl(primaryImage.image_url) : FALLBACK_CARD_IMAGE;
+  const price = product.customer_price ? Number(product.customer_price) : 0;
+  const oldPrice = price > 0 ? price * 1.1 : 0;
+  const badge =
+    oldPrice > price && oldPrice > 0 ? `${Math.round(((oldPrice - price) / oldPrice) * 100)}% Off` : null;
+
+  return {
+    id: product.id,
+    name: product.name,
+    price,
+    oldPrice,
+    badge,
+    badgeType: badge ? 'sale' : '',
+    image: imageUrl
+  };
+};
 
 const Home = () => {
   const slides = [
@@ -30,25 +88,18 @@ const Home = () => {
     }
   ];
 
-  const categories = [
-    { id: 1, name: "Ashoka Besan", count: "3 items", icon: <Layers size={40} strokeWidth={1.5} /> },
-    { id: 2, name: "Ashoka Dals", count: "6 items", icon: <ShoppingBag size={40} strokeWidth={1.5} /> },
-    { id: 3, name: "Ashoka Flours", count: "3 items", icon: <Wheat size={40} strokeWidth={1.5} /> },
-    { id: 4, name: "Ashoka Pulses", count: "5 items", icon: <Box size={40} strokeWidth={1.5} /> },
-    { id: 5, name: "Ashoka Staples", count: "10+ items", icon: <PackageIcon size={40} strokeWidth={1.5} /> },
-  ];
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [categoriesError, setCategoriesError] = useState('');
 
-  const products = [
-    { id: 1, name: "Organic Avocado", price: "USD 150.00", badge: "10% Off", badgeType: "sale" },
-    { id: 2, name: "Cheddar Fries", price: "USD 190.00" },
-    { id: 3, name: "Broccoli Organic", price: "USD 300.00", badge: "15% Off", badgeType: "sale" },
-    { id: 4, name: "Broccoli Farms", price: "USD 129.00" },
-    { id: 5, name: "Fresh Orange", price: "USD 150.00", badge: "10% Off", badgeType: "sale" },
-    { id: 6, name: "Organic Avocado", price: "USD 150.00" },
-    { id: 7, name: "Fresh Orange", price: "USD 80.00", badge: "NEW", badgeType: "new" },
-    { id: 8, name: "Read Apple", price: "USD 49.00" },
-  ];
-  
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsError, setProductsError] = useState('');
+
+  const [wishlistIds, setWishlistIds] = useState(getInitialWishlist);
+  const [actionMessage, setActionMessage] = useState('');
+  const [actionError, setActionError] = useState('');
+
   const testimonials = [
     {
       name: 'Ralph Edwards',
@@ -110,6 +161,101 @@ const Home = () => {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
+  }, []);
+
+  const persistWishlist = (ids) => {
+    setWishlistIds(ids);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('wishlistIds', JSON.stringify(ids));
+    }
+  };
+
+  const handleToggleWishlist = (productId, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    setActionMessage('');
+    setActionError('');
+    const exists = wishlistIds.includes(productId);
+    const updated = exists
+      ? wishlistIds.filter((id) => id !== productId)
+      : [...wishlistIds, productId];
+    persistWishlist(updated);
+    setActionMessage(exists ? 'Removed from wishlist' : 'Added to wishlist');
+  };
+
+  const handleAddToCart = async (productId, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    setActionMessage('');
+    setActionError('');
+    const token = getAuthToken();
+    if (!token) {
+      setActionError('Please login as customer or wholesaler to add items to cart');
+      return;
+    }
+    try {
+      const response = await fetch(`${API_BASE}/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add item to cart');
+      }
+      setActionMessage('Item added to cart');
+    } catch (err) {
+      setActionError(err.message || 'Something went wrong while adding to cart');
+    }
+  };
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      setCategoriesLoading(true);
+      setCategoriesError('');
+      try {
+        const res = await fetch(`${API_BASE}/categories?limit=8&page=1`);
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || 'Failed to load categories');
+        }
+        const list = Array.isArray(data.categories) ? data.categories : [];
+        setCategories(list);
+      } catch (err) {
+        setCategoriesError(err.message || 'Something went wrong while loading categories');
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    const loadProducts = async () => {
+      setProductsLoading(true);
+      setProductsError('');
+      try {
+        const res = await fetch(`${API_BASE}/products?limit=8&page=1`);
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || 'Failed to load products');
+        }
+        const list = Array.isArray(data.products) ? data.products : [];
+        const mapped = list.map(mapApiProductToCard);
+        setProducts(mapped);
+      } catch (err) {
+        setProductsError(err.message || 'Something went wrong while loading products');
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+
+    loadCategories();
+    loadProducts();
   }, []);
 
   useEffect(() => {
@@ -178,16 +324,38 @@ const Home = () => {
           </div>
           
           <Row className="justify-content-center g-4">
-            {categories.map((cat) => (
+            {categoriesLoading && (
+              <Col xs={12} className="text-center py-3">
+                <Spinner animation="border" size="sm" className="me-2" />
+                <span>Loading categories...</span>
+              </Col>
+            )}
+            {!categoriesLoading && categoriesError && (
+              <Col xs={12}>
+                <Alert variant="danger" className="mb-0 text-center">
+                  {categoriesError}
+                </Alert>
+              </Col>
+            )}
+            {!categoriesLoading && !categoriesError && categories.length === 0 && (
+              <Col xs={12} className="text-center text-muted">
+                No categories available.
+              </Col>
+            )}
+            {!categoriesLoading && !categoriesError && categories.map((cat) => (
               <Col key={cat.id} lg={2} md={4} sm={6} xs={12} className="category-col">
                 <div className="category-card">
                   <div className="category-icon-wrapper">
                     <div className="icon-circle">
-                      {cat.icon}
+                      <Layers size={40} strokeWidth={1.5} />
                     </div>
                   </div>
-                  <h5 className="category-name">{cat.name}</h5>
-                  <p className="category-count">{cat.count}</p>
+                  <h5 className="category-name">{cat.category_name}</h5>
+                  <p className="category-count">
+                    {(cat.product_count ?? 0) === 1
+                      ? '1 item'
+                      : `${cat.product_count ?? 0} items`}
+                  </p>
                 </div>
               </Col>
             ))}
@@ -206,7 +374,7 @@ const Home = () => {
             <Nav className="product-filters" defaultActiveKey="all">
               <Nav.Item>
                 <Nav.Link eventKey="all" className="active">
-                  <span className="count-badge">8</span> All Products
+                  <span className="count-badge">{products.length}</span> All Products
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item><Nav.Link eventKey="new">New In</Nav.Link></Nav.Item>
@@ -215,39 +383,92 @@ const Home = () => {
             </Nav>
           </div>
 
+          {actionError && (
+            <Alert variant="danger" className="mb-3">
+              {actionError}
+            </Alert>
+          )}
+          {actionMessage && (
+            <Alert variant="success" className="mb-3">
+              {actionMessage}
+            </Alert>
+          )}
+
           <Row className="g-4">
-            {products.map((product) => (
+            {productsLoading && (
+              <Col xs={12} className="text-center py-4">
+                <Spinner animation="border" />
+              </Col>
+            )}
+            {!productsLoading && productsError && (
+              <Col xs={12}>
+                <Alert variant="danger" className="mb-0 text-center">
+                  {productsError}
+                </Alert>
+              </Col>
+            )}
+            {!productsLoading && !productsError && products.length === 0 && (
+              <Col xs={12} className="text-center text-muted">
+                No products found.
+              </Col>
+            )}
+            {!productsLoading && !productsError && products.map((product) => (
               <Col key={product.id} lg={3} md={4} sm={6}>
-                <div className="product-card">
-                  <div className="product-image-wrapper">
-                    <div className="product-actions">
-                      <button className="action-btn" aria-label="Add to Wishlist">
-                        <Heart size={18} />
-                      </button>
-                      <button className="action-btn" aria-label="Add to Cart">
-                        <ShoppingBag size={18} />
-                      </button>
-                      <button className="action-btn" aria-label="View Details">
-                        <Eye size={18} />
-                      </button>
+                <Link to={`/product/${product.id}`} className="text-decoration-none text-dark">
+                  <div className="product-card">
+                    <div className="product-image-wrapper">
+                      <div className="product-actions">
+                        <button
+                          className="action-btn"
+                          aria-label="Add to Wishlist"
+                          onClick={(event) => handleToggleWishlist(product.id, event)}
+                        >
+                          <Heart
+                            size={18}
+                            color={wishlistIds.includes(product.id) ? '#ff4d4f' : '#ffffff'}
+                            fill={wishlistIds.includes(product.id) ? '#ff4d4f' : 'none'}
+                          />
+                        </button>
+                        <button
+                          className="action-btn"
+                          aria-label="Add to Cart"
+                          onClick={(event) => handleAddToCart(product.id, event)}
+                        >
+                          <ShoppingBag size={18} />
+                        </button>
+                        <button className="action-btn" aria-label="View Details">
+                          <Eye size={18} />
+                        </button>
+                      </div>
+                      {product.badge && (
+                        <span className={`product-badge ${product.badgeType}`}>
+                          {product.badge}
+                        </span>
+                      )}
+                      <img src={product.image || productImg} alt={product.name} className="product-image" />
                     </div>
-                    {product.badge && (
-                      <span className={`product-badge ${product.badgeType}`}>
-                        {product.badge}
-                      </span>
-                    )}
-                    <img src={productImg} alt={product.name} className="product-image" />
-                  </div>
-                  <div className="product-info">
-                    <h5 className="product-name">{product.name}</h5>
-                    <div className="product-rating">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={14} fill="#ddd" color="#ddd" />
-                      ))}
+                    <div className="product-info">
+                      <h5 className="product-name">{product.name}</h5>
+                      <div className="product-rating">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={14} fill="#ddd" color="#ddd" />
+                        ))}
+                      </div>
+                      <p className="product-price">
+                        {product.oldPrice > product.price && product.oldPrice > 0 ? (
+                          <>
+                            <span className="me-2 text-muted text-decoration-line-through">
+                              ₹{product.oldPrice.toFixed(2)}
+                            </span>
+                            <span>₹{product.price.toFixed(2)}</span>
+                          </>
+                        ) : (
+                          <>₹{product.price.toFixed(2)}</>
+                        )}
+                      </p>
                     </div>
-                    <p className="product-price">{product.price}</p>
                   </div>
-                </div>
+                </Link>
               </Col>
             ))}
           </Row>
