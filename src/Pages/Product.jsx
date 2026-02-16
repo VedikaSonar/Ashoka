@@ -29,11 +29,22 @@ const getInitialWishlist = () => {
   }
 };
 
+const buildImageUrl = (imagePath) => {
+  if (!imagePath) return FALLBACK_LIST_IMAGE;
+  if (typeof imagePath !== 'string') return FALLBACK_LIST_IMAGE;
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  const baseUrl = API_BASE.replace('/api', '');
+  const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  return `${baseUrl}${normalizedPath}`;
+};
+
 const mapApiProductToView = (product) => {
   const images = product.images || [];
   const primaryImage = images.find((img) => img.is_primary) || images[0];
-  const imageUrl = primaryImage ? `${API_BASE.replace('/api', '')}/${primaryImage.image_url}` : FALLBACK_LIST_IMAGE;
-  const categoryName = product.category && product.category.name ? product.category.name : 'CATEGORY';
+  const imageUrl = primaryImage ? buildImageUrl(primaryImage.image_url) : FALLBACK_LIST_IMAGE;
+  const categoryName = product.category && product.category.category_name ? product.category.category_name : 'CATEGORY';
   const price = product.customer_price ? Number(product.customer_price) : 0;
   const oldPrice = price > 0 ? price * 1.1 : 0;
   const discount = oldPrice > price && oldPrice > 0 ? `${Math.round(((oldPrice - price) / oldPrice) * 100)}% Off` : '';

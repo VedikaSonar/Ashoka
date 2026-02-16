@@ -29,18 +29,28 @@ const getInitialWishlist = () => {
   }
 };
 
+const buildImageUrl = (imagePath) => {
+  if (!imagePath) return FALLBACK_DETAIL_IMAGE;
+  if (typeof imagePath !== 'string') return FALLBACK_DETAIL_IMAGE;
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  const baseUrl = API_BASE.replace('/api', '');
+  const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  return `${baseUrl}${normalizedPath}`;
+};
+
 const mapApiProductToView = (product) => {
   const images = product.images || [];
-  const baseUrl = API_BASE.replace('/api', '');
   const orderedImages = [...images].sort((a, b) => {
     const aOrder = typeof a.sort_order === 'number' ? a.sort_order : 0;
     const bOrder = typeof b.sort_order === 'number' ? b.sort_order : 0;
     return aOrder - bOrder;
   });
   const primaryImage = orderedImages.find((img) => img.is_primary) || orderedImages[0];
-  const primaryImageUrl = primaryImage ? `${baseUrl}/${primaryImage.image_url}` : FALLBACK_DETAIL_IMAGE;
-  const allImageUrls = orderedImages.map((img) => `${baseUrl}/${img.image_url}`);
-  const categoryName = product.category && product.category.name ? product.category.name : 'CATEGORY';
+  const primaryImageUrl = primaryImage ? buildImageUrl(primaryImage.image_url) : FALLBACK_DETAIL_IMAGE;
+  const allImageUrls = orderedImages.map((img) => buildImageUrl(img.image_url));
+  const categoryName = product.category && product.category.category_name ? product.category.category_name : 'CATEGORY';
   const price = product.customer_price ? Number(product.customer_price) : 0;
   const oldPrice = price > 0 ? price * 1.1 : 0;
   const discount = oldPrice > price && oldPrice > 0 ? `${Math.round(((oldPrice - price) / oldPrice) * 100)}% Off` : '';
