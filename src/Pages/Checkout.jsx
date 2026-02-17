@@ -325,6 +325,22 @@ const Checkout = () => {
 
       <section className="checkout-main-section py-5">
         <Container>
+          <div className="checkout-summary d-flex flex-wrap align-items-center justify-content-between mb-4">
+            <div className="checkout-summary-steps">
+              <span className="checkout-summary-step checkout-summary-step-active">Cart</span>
+              <span className="checkout-summary-step-separator">›</span>
+              <span className="checkout-summary-step checkout-summary-step-active">Checkout</span>
+              <span className="checkout-summary-step-separator">›</span>
+              <span className="checkout-summary-step">Order Complete</span>
+            </div>
+            <div className="checkout-summary-totals">
+              <span className="checkout-summary-label">Items:</span>
+              <span className="checkout-summary-value">{items.length}</span>
+              <span className="checkout-summary-divider">•</span>
+              <span className="checkout-summary-label">Total:</span>
+              <span className="checkout-summary-value">₹{total.toFixed(2)}</span>
+            </div>
+          </div>
           {error && (
             <Alert variant="danger" className="mb-3">
               {error}
@@ -502,7 +518,10 @@ const Checkout = () => {
 
             <Col lg={5}>
               <div className="checkout-card checkout-order-card">
-                <h3 className="checkout-section-title mb-3">Your order</h3>
+                <h3 className="checkout-section-title mb-1">Your order</h3>
+                <p className="checkout-order-subtitle mb-3">
+                  Review your order summary and choose a secure payment method.
+                </p>
                 <div className="checkout-order-table mb-3">
                   <div className="checkout-order-header d-flex justify-content-between">
                     <span>Product</span>
