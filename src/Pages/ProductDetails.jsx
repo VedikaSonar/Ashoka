@@ -50,10 +50,28 @@ const mapApiProductToView = (product) => {
   const primaryImage = orderedImages.find((img) => img.is_primary) || orderedImages[0];
   const primaryImageUrl = primaryImage ? buildImageUrl(primaryImage.image_url) : FALLBACK_DETAIL_IMAGE;
   const allImageUrls = orderedImages.map((img) => buildImageUrl(img.image_url));
-  const categoryName = product.category && product.category.category_name ? product.category.category_name : 'CATEGORY';
-  const price = product.customer_price ? Number(product.customer_price) : 0;
+  const categoryName =
+    product.category && product.category.category_name ? product.category.category_name : 'CATEGORY';
+  const retailPrice = product.customer_price ? Number(product.customer_price) : 0;
+  const wholesalePrice = product.wholesaler_price ? Number(product.wholesaler_price) : 0;
+  let price = retailPrice;
+  if (typeof localStorage !== 'undefined') {
+    const wholesalerToken = localStorage.getItem('wholesalerToken');
+    if (wholesalerToken && wholesalePrice > 0) {
+      price = wholesalePrice;
+    } else if (retailPrice > 0) {
+      price = retailPrice;
+    } else if (wholesalePrice > 0) {
+      price = wholesalePrice;
+    }
+  } else if (retailPrice > 0) {
+    price = retailPrice;
+  } else if (wholesalePrice > 0) {
+    price = wholesalePrice;
+  }
   const oldPrice = price > 0 ? price * 1.1 : 0;
-  const discount = oldPrice > price && oldPrice > 0 ? `${Math.round(((oldPrice - price) / oldPrice) * 100)}% Off` : '';
+  const discount =
+    oldPrice > price && oldPrice > 0 ? `${Math.round(((oldPrice - price) / oldPrice) * 100)}% Off` : '';
 
   return {
     id: product.id,

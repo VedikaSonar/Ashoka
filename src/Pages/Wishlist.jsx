@@ -244,9 +244,27 @@ const Wishlist = () => {
                   </thead>
                   <tbody>
                     {currentProducts.map((product) => {
-                      const unitPrice = Number(
-                        product.customer_price || product.wholesaler_price || 0,
-                      );
+                      const retailPrice = product.customer_price
+                        ? Number(product.customer_price)
+                        : 0;
+                      const wholesalePrice = product.wholesaler_price
+                        ? Number(product.wholesaler_price)
+                        : 0;
+                      let unitPrice = retailPrice;
+                      if (typeof localStorage !== 'undefined') {
+                        const wholesalerToken = localStorage.getItem('wholesalerToken');
+                        if (wholesalerToken && wholesalePrice > 0) {
+                          unitPrice = wholesalePrice;
+                        } else if (retailPrice > 0) {
+                          unitPrice = retailPrice;
+                        } else if (wholesalePrice > 0) {
+                          unitPrice = wholesalePrice;
+                        }
+                      } else if (retailPrice > 0) {
+                        unitPrice = retailPrice;
+                      } else if (wholesalePrice > 0) {
+                        unitPrice = wholesalePrice;
+                      }
                       return (
                         <tr key={product.id}>
                           <td className="text-center">

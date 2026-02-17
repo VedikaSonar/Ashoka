@@ -99,7 +99,7 @@ const WholesalerLogin = () => {
       }
 
       setMessage(data.message || 'Login successful');
-      navigate('/wholesaler-dashboard');
+      navigate('/');
     } catch (err) {
       setError(err.message || 'Something went wrong');
     } finally {

@@ -47,7 +47,23 @@ const mapApiProductToCard = (product) => {
   const images = product.images || [];
   const primaryImage = images.find((img) => img.is_primary) || images[0];
   const imageUrl = primaryImage ? buildImageUrl(primaryImage.image_url) : FALLBACK_CARD_IMAGE;
-  const price = product.customer_price ? Number(product.customer_price) : 0;
+  const retailPrice = product.customer_price ? Number(product.customer_price) : 0;
+  const wholesalePrice = product.wholesaler_price ? Number(product.wholesaler_price) : 0;
+  let price = retailPrice;
+  if (typeof localStorage !== 'undefined') {
+    const wholesalerToken = localStorage.getItem('wholesalerToken');
+    if (wholesalerToken && wholesalePrice > 0) {
+      price = wholesalePrice;
+    } else if (retailPrice > 0) {
+      price = retailPrice;
+    } else if (wholesalePrice > 0) {
+      price = wholesalePrice;
+    }
+  } else if (retailPrice > 0) {
+    price = retailPrice;
+  } else if (wholesalePrice > 0) {
+    price = wholesalePrice;
+  }
   const oldPrice = price > 0 ? price * 1.1 : 0;
   const badge =
     oldPrice > price && oldPrice > 0 ? `${Math.round(((oldPrice - price) / oldPrice) * 100)}% Off` : null;
