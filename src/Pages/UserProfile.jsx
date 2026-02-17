@@ -221,14 +221,6 @@ const UserProfile = () => {
                     </Button>
                   </div>
                 </Form>
-                <div className="d-flex gap-2 mt-4">
-                  <Button as={Link} to="/orders" variant="success">
-                    View Orders
-                  </Button>
-                  <Button as={Link} to="/wishlist" variant="outline-success">
-                    My Wishlist
-                  </Button>
-                </div>
               </Card.Body>
             </Card>
           </Col>

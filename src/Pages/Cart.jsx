@@ -42,10 +42,7 @@ const Cart = () => {
       }
       setCart(data);
       const items = data && Array.isArray(data.items) ? data.items : [];
-      const count = items.reduce(
-        (sum, item) => sum + (typeof item.quantity === 'number' ? item.quantity : 0),
-        0,
-      );
+      const count = items.length;
       const safeCount = Number.isNaN(count) || count < 0 ? 0 : count;
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('cartCount', String(safeCount));
@@ -207,11 +204,13 @@ const Cart = () => {
                           <td className="text-center">
                             <div className="cart-img-wrapper mx-auto">
                               {item.product && item.product.images && item.product.images.length ? (
-                                <img
-                                  src={`${API_BASE.replace('/api', '')}/${item.product.images[0].image_url}`}
-                                  alt={item.product.name}
-                                  className="img-fluid"
-                                />
+                                <Link to={`/product/${item.product_id}`}>
+                                  <img
+                                    src={`${API_BASE.replace('/api', '')}/${item.product.images[0].image_url}`}
+                                    alt={item.product.name}
+                                    className="img-fluid"
+                                  />
+                                </Link>
                               ) : (
                                 <span className="small text-muted">No Image</span>
                               )}

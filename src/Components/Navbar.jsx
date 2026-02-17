@@ -123,10 +123,7 @@ const Navbar = () => {
           .then((result) => {
             if (!result || !result.ok) return;
             const items = Array.isArray(result.data.items) ? result.data.items : [];
-            const count = items.reduce(
-              (sum, item) => sum + (typeof item.quantity === 'number' ? item.quantity : 0),
-              0,
-            );
+            const count = items.length;
             const safeCount = Number.isNaN(count) || count < 0 ? 0 : count;
             localStorage.setItem('cartCount', String(safeCount));
             setCartCount(safeCount);

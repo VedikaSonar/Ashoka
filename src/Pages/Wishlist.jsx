@@ -137,14 +137,28 @@ const Wishlist = () => {
       }
       const msg = 'Item added to cart';
       setMessage(msg);
-      if (typeof localStorage !== 'undefined') {
-        const raw = localStorage.getItem('cartCount');
-        const current = parseInt(raw || '0', 10);
-        const next = Number.isNaN(current) || current < 0 ? 1 : current + 1;
-        localStorage.setItem('cartCount', String(next));
+      try {
+        const countResponse = await fetch(`${API_BASE}/cart`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const countData = await countResponse.json();
+        if (countResponse.ok) {
+          const items = countData && Array.isArray(countData.items) ? countData.items : [];
+          const count = items.length;
+          const safeCount = Number.isNaN(count) || count < 0 ? 0 : count;
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('cartCount', String(safeCount));
+          }
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('cart:update'));
+          }
+        }
+      } catch (error) {
+        console.error(error);
       }
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('cart:update'));
         window.dispatchEvent(
           new CustomEvent('app:toast', {
             detail: { message: msg, variant: 'success' },
@@ -237,15 +251,17 @@ const Wishlist = () => {
                         <tr key={product.id}>
                           <td className="text-center">
                             <div className="cart-img-wrapper mx-auto">
-                              <img
-                                src={
-                                  product.images && product.images.length
-                                    ? `${API_BASE.replace('/api', '')}/${product.images[0].image_url}`
-                                    : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="%23f3f3f3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="14">No Image</text></svg>'
-                                }
-                                alt={product.name}
-                                className="img-fluid"
-                              />
+                              <Link to={`/product/${product.id}`}>
+                                <img
+                                  src={
+                                    product.images && product.images.length
+                                      ? `${API_BASE.replace('/api', '')}/${product.images[0].image_url}`
+                                      : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="%23f3f3f3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="14">No Image</text></svg>'
+                                  }
+                                  alt={product.name}
+                                  className="img-fluid"
+                                />
+                              </Link>
                             </div>
                           </td>
                           <td>
