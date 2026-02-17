@@ -75,10 +75,6 @@ const Navbar = () => {
     } else {
       setAuthType(null);
       setAuthName('');
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem('wishlistIds');
-      }
-      setWishlistCount(0);
     }
   }, [location]);
 
@@ -188,7 +184,6 @@ const Navbar = () => {
       localStorage.removeItem('wholesalerToken');
       localStorage.removeItem('wholesalerInfo');
       localStorage.removeItem('cartCount');
-      localStorage.removeItem('wishlistIds');
       window.dispatchEvent(new Event('wishlist:update'));
       window.dispatchEvent(new Event('cart:update'));
     }

@@ -40,7 +40,16 @@ const Wishlist = () => {
     const fetchWishlistProducts = async () => {
       const token = getAuthToken();
       if (!token) {
+        const msg = 'Please login as customer or wholesaler to use wishlist';
+        setError(msg);
         setProducts([]);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('app:toast', {
+              detail: { message: msg, variant: 'danger' },
+            }),
+          );
+        }
         return;
       }
       if (!wishlistIds.length) {
