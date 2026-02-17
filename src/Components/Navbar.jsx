@@ -7,10 +7,20 @@ import './Navbar.css';
 
 const API_BASE = 'http://127.0.0.1:5000/api';
 
+const getWishlistStorageKey = () => {
+  if (typeof localStorage === 'undefined') return 'wishlistIds';
+  const wholesalerToken = localStorage.getItem('wholesalerToken');
+  const userToken = localStorage.getItem('userToken');
+  if (wholesalerToken) return 'wishlistIds_wholesaler';
+  if (userToken) return 'wishlistIds_user';
+  return 'wishlistIds';
+};
+
 const getWishlistCountFromStorage = () => {
   if (typeof localStorage === 'undefined') return 0;
   try {
-    const data = localStorage.getItem('wishlistIds');
+    const key = getWishlistStorageKey();
+    const data = localStorage.getItem(key);
     if (!data) return 0;
     const parsed = JSON.parse(data);
     if (Array.isArray(parsed)) return parsed.length;
@@ -76,6 +86,38 @@ const Navbar = () => {
       setAuthType(null);
       setAuthName('');
     }
+
+    setWishlistCount(getWishlistCountFromStorage());
+
+    if (typeof localStorage !== 'undefined') {
+      const token =
+        localStorage.getItem('userToken') || localStorage.getItem('wholesalerToken');
+      if (token) {
+        fetch(`${API_BASE}/cart`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((response) =>
+            response
+              .json()
+              .then((data) => ({ ok: response.ok, data }))
+              .catch(() => ({ ok: false })),
+          )
+          .then((result) => {
+            if (!result || !result.ok) return;
+            const items = Array.isArray(result.data.items) ? result.data.items : [];
+            const count = items.length;
+            const safeCount = Number.isNaN(count) || count < 0 ? 0 : count;
+            localStorage.setItem('cartCount', String(safeCount));
+            setCartCount(safeCount);
+          })
+          .catch(() => {});
+      } else {
+        localStorage.removeItem('cartCount');
+        setCartCount(0);
+      }
+    }
   }, [location]);
 
   useEffect(() => {
@@ -93,7 +135,7 @@ const Navbar = () => {
     const handleWishlistEvent = () => updateWishlistCount();
     const handleCartEvent = () => updateCartCount();
     const handleStorage = (event) => {
-      if (event.key === 'wishlistIds') {
+      if (event.key && event.key.startsWith('wishlistIds')) {
         updateWishlistCount();
       }
       if (event.key === 'cartCount') {
@@ -180,12 +222,17 @@ const Navbar = () => {
       localStorage.removeItem('userAddress');
       localStorage.removeItem('wholesalerToken');
       localStorage.removeItem('wholesalerInfo');
+      localStorage.removeItem('wishlistIds');
+      localStorage.removeItem('wishlistIds_user');
+      localStorage.removeItem('wishlistIds_wholesaler');
       localStorage.removeItem('cartCount');
       window.dispatchEvent(new Event('wishlist:update'));
       window.dispatchEvent(new Event('cart:update'));
     }
     setAuthType(null);
     setAuthName('');
+    setWishlistCount(0);
+    setCartCount(0);
     navigate('/');
   };
 

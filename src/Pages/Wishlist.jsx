@@ -15,10 +15,20 @@ const getAuthToken = () => {
   return null;
 };
 
+const getWishlistStorageKey = () => {
+  if (typeof localStorage === 'undefined') return 'wishlistIds';
+  const wholesalerToken = localStorage.getItem('wholesalerToken');
+  const userToken = localStorage.getItem('userToken');
+  if (wholesalerToken) return 'wishlistIds_wholesaler';
+  if (userToken) return 'wishlistIds_user';
+  return 'wishlistIds';
+};
+
 const getStoredWishlistIds = () => {
   if (typeof localStorage === 'undefined') return [];
   try {
-    const data = localStorage.getItem('wishlistIds');
+    const key = getWishlistStorageKey();
+    const data = localStorage.getItem(key);
     if (!data) return [];
     const parsed = JSON.parse(data);
     if (Array.isArray(parsed)) return parsed;
@@ -101,7 +111,8 @@ const Wishlist = () => {
   const persistWishlist = (ids) => {
     setWishlistIds(ids);
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('wishlistIds', JSON.stringify(ids));
+      const key = getWishlistStorageKey();
+      localStorage.setItem(key, JSON.stringify(ids));
     }
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('wishlist:update'));
