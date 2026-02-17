@@ -3,6 +3,9 @@ import { Container, Row, Col, Button, Carousel, Nav, Alert, Spinner } from 'reac
 import { ChevronRight, ChevronLeft, Wheat, Box, Container as PackageIcon, Layers, ShoppingBag, Star, Heart, Eye, Leaf, Award, ShieldCheck, Quote } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import productImg from '../assets/images/product 5.png';
+import banner1 from '../assets/images/ashoka banners 1.jpg';
+import banner2 from '../assets/images/ashoka  banners 2.jpg';
+import banner3 from '../assets/images/ashoka  banners 3.jpg';
 import Footer from '../Components/Footer';
 import './Home.css';
 
@@ -108,27 +111,9 @@ const mapApiProductToCard = (product) => {
 
 const Home = () => {
   const slides = [
-    {
-      id: 1,
-      badge: "100% ORGANIC PRODUCT",
-      title: <>The Heart of Authentic Indian Cooking</>,
-      image: productImg,
-      sale: "30%"
-    },
-    {
-      id: 2,
-      badge: "FRESH FROM FARM",
-      title: <>Healthy Grains <br /> For Your <br /> Daily <br /> Nutrition</>,
-      image: productImg,
-      sale: "25%"
-    },
-    {
-      id: 3,
-      badge: "BEST QUALITY GUARANTEED",
-      title: <>Authentic Taste. <br /> Trusted <br /> Quality.</>,
-      image: productImg,
-      sale: "20%"
-    }
+    { id: 1, image: banner1, alt: 'Ashoka banner 1' },
+    { id: 2, image: banner2, alt: 'Ashoka banner 2' },
+    { id: 3, image: banner3, alt: 'Ashoka banner 3' },
   ];
 
   const [categories, setCategories] = useState([]);
@@ -441,40 +426,21 @@ const Home = () => {
     <div className="home-page">
       {/* Hero Section with Slider */}
       <section className="hero-section p-0">
-        <Carousel fade indicators={true} controls={true} interval={3000} pause="hover" className="hero-carousel">
+        <Carousel
+          fade
+          indicators
+          controls
+          interval={3000}
+          pause="hover"
+          className="hero-carousel"
+        >
           {slides.map((slide) => (
             <Carousel.Item key={slide.id}>
-              <div className="hero-slide-content">
-                <Container>
-                  <Row className="align-items-center py-5">
-                    <Col lg={6} md={12}>
-                      <div className="hero-content">
-                        <span className="hero-badge">{slide.badge}</span>
-                        <h1 className="hero-title">
-                          {slide.title}
-                        </h1>
-                        <Button className="hero-btn">
-                          BUY NOW <ChevronRight size={18} />
-                        </Button>
-                      </div>
-                    </Col>
-                    <Col lg={6} md={12}>
-                      <div className="hero-image-container">
-                        <img 
-                          src={slide.image} 
-                          alt="Fresh Products" 
-                          className="hero-image"
-                        />
-                        <div className="sale-badge">
-                          <span className="text">Sale Up To</span>
-                          <span className="percentage">{slide.sale}</span>
-                          <span className="off">OFF</span>
-                        </div>
-                      </div>
-                    </Col>
-                  </Row>
-                </Container>
-              </div>
+              <img
+                src={slide.image}
+                alt={slide.alt}
+                className="d-block w-100"
+              />
             </Carousel.Item>
           ))}
         </Carousel>
