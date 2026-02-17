@@ -78,7 +78,7 @@ const Navbar = () => {
             <Phone size={14} />
             <span>+91 99709 30890 | +91 88881 88194</span>
           </div>
-          <div className="top-bar-center text-uppercase small d-none d-md-block">
+          <div className="top-bar-center  small d-none d-md-block">
             CUSTOMER CARE:{' '}
             <span className="fw-bold">+91 77410 90767</span>
             {'  •  '}
@@ -86,15 +86,9 @@ const Navbar = () => {
             <span className="fw-bold">ashokproducts.sales@gmail.com</span>
           </div>
           <div className="top-bar-right d-flex gap-3 small">
-            <div className="d-flex align-items-center gap-1 cursor-pointer">
-              English <ChevronDown size={14} />
-            </div>
-            <div className="d-flex align-items-center gap-1 cursor-pointer">
-              USD <ChevronDown size={14} />
-            </div>
-            <div className="d-flex align-items-center gap-1 cursor-pointer">
-              Setting <ChevronDown size={14} />
-            </div>
+           
+           
+          
           </div>
         </Container>
       </div>

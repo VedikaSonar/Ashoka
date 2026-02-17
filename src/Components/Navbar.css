@@ -70,3 +70,6 @@
     border-bottom: 1px solid #f8f9fa;
   }
 }
+.small{
+  font-size: 13px!important;
+}
