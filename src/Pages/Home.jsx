@@ -624,10 +624,10 @@ const Home = () => {
             className="testi-carousel"
           >
             {testimonialSlides.map((slide, index) => (
-              <Carousel.Item key={index}>
+              <Carousel.Item key={`testimonial-slide-${index}`}>
                 <Row className="g-4">
-                  {slide.map((t) => (
-                    <Col key={t.name} lg={4} md={6}>
+                  {slide.map((t, idx) => (
+                    <Col key={`${t.name}-${idx}`} lg={4} md={6}>
                       <div className="testimonial-card">
                         <div className="stars">
                           {[...Array(4)].map((_, i) => (

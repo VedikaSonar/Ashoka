@@ -11,6 +11,8 @@ import UserLogin from './Pages/UserLogin';
 import WholesalerLogin from './Pages/WholesalerLogin';
 import UserRegister from './Pages/UserRegister';
 import WholesalerRegister from './Pages/WholesalerRegister';
+import UserProfile from './Pages/UserProfile';
+import Orders from './Pages/Orders';
 import Contact from './Pages/Contact';
 import AuthOptions from './Pages/AuthOptions';
 import WholesalerDashboard from './Pages/WholesalerDashboard';
@@ -31,6 +33,8 @@ function App() {
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path="/wholesaler-login" element={<WholesalerLogin />} />
+        <Route path="/my-profile" element={<UserProfile />} />
+        <Route path="/orders" element={<Orders />} />
         <Route path="/register" element={<UserRegister />} />
         <Route path="/wholesaler-register" element={<WholesalerRegister />} />
         <Route path="/contact" element={<Contact />} />

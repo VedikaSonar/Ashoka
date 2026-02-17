@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Container, Nav, Navbar as BootstrapNavbar, NavDropdown, Button } from 'react-bootstrap';
-import { Phone, ChevronDown, Heart, ShoppingBag, Menu, Salad } from 'lucide-react';
+import { Phone, ChevronDown, Heart, ShoppingBag, Menu, Salad, User } from 'lucide-react';
 import logo from '../assets/images/ashoka logo .png';
 import './Navbar.css';
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+  const [authType, setAuthType] = useState(null);
+  const [authName, setAuthName] = useState('');
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -15,6 +18,56 @@ const Navbar = () => {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  useEffect(() => {
+    if (typeof localStorage === 'undefined') return;
+
+    const userToken = localStorage.getItem('userToken');
+    const userInfoRaw = localStorage.getItem('userInfo');
+    const wholesalerToken = localStorage.getItem('wholesalerToken');
+    const wholesalerInfoRaw = localStorage.getItem('wholesalerInfo');
+
+    if (userToken && userInfoRaw) {
+      setAuthType('user');
+      try {
+        const userInfo = JSON.parse(userInfoRaw);
+        const name = userInfo.name || userInfo.email || '';
+        setAuthName(name);
+      } catch {
+        setAuthName('');
+      }
+    } else if (wholesalerToken && wholesalerInfoRaw) {
+      setAuthType('wholesaler');
+      try {
+        const wholesalerInfo = JSON.parse(wholesalerInfoRaw);
+        const name = wholesalerInfo.name || wholesalerInfo.email || '';
+        setAuthName(name);
+      } catch {
+        setAuthName('');
+      }
+    } else {
+      setAuthType(null);
+      setAuthName('');
+    }
+  }, [location]);
+
+  const getInitial = (value) => {
+    if (!value || typeof value !== 'string') return '';
+    return value.trim().charAt(0).toUpperCase();
+  };
+
+  const handleLogout = () => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('userToken');
+      localStorage.removeItem('userInfo');
+      localStorage.removeItem('userAddress');
+      localStorage.removeItem('wholesalerToken');
+      localStorage.removeItem('wholesalerInfo');
+    }
+    setAuthType(null);
+    setAuthName('');
+    navigate('/');
+  };
 
   return (
     <div className={`navbar-wrapper${scrolled ? ' scrolled' : ''}`}>
@@ -101,15 +154,67 @@ const Navbar = () => {
               >
                 <ShoppingBag size={24} />
               </Link>
-              <Button
-                as={Link}
-                to="/auth"
-                variant="success"
-                size="sm"
-                className="fw-semibold px-3"
-              >
-                Login / Register
-              </Button>
+              {authType ? (
+                <NavDropdown
+                  align="end"
+                  id="profile-dropdown"
+                  title={
+                    <div className="d-flex align-items-center gap-2">
+                      <div
+                        className="d-flex align-items-center justify-content-center rounded-circle bg-success text-white"
+                        style={{ width: 32, height: 32 }}
+                      >
+                        {authName ? (
+                          <span className="small fw-bold">
+                            {getInitial(authName)}
+                          </span>
+                        ) : (
+                          <User size={18} />
+                        )}
+                      </div>
+                    </div>
+                  }
+                >
+                  <NavDropdown.Item
+                    onClick={() => {
+                      if (authType === 'wholesaler') {
+                        navigate('/wholesaler-dashboard');
+                      } else {
+                        navigate('/my-profile');
+                      }
+                    }}
+                  >
+                    My Profile
+                  </NavDropdown.Item>
+                  <NavDropdown.Item
+                    onClick={() => {
+                      navigate('/orders');
+                    }}
+                  >
+                    Orders
+                  </NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/wishlist">
+                    My Wishlist
+                  </NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/cart">
+                    My Cart
+                  </NavDropdown.Item>
+                  <NavDropdown.Divider />
+                  <NavDropdown.Item onClick={handleLogout}>
+                    Logout
+                  </NavDropdown.Item>
+                </NavDropdown>
+              ) : (
+                <Button
+                  as={Link}
+                  to="/auth"
+                  variant="success"
+                  size="sm"
+                  className="fw-semibold px-3"
+                >
+                  Login / Register
+                </Button>
+              )}
             </div>
           </BootstrapNavbar.Collapse>
         </Container>

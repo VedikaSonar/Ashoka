@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import { Truck, RotateCcw, Headphones, ShieldCheck, MapPin, Phone, Facebook, Twitter, Linkedin, Instagram } from 'lucide-react';
+import { Truck, RotateCcw, Headphones, ShieldCheck, MapPin, Phone, Facebook, Twitter, Linkedin, Instagram, Mail } from 'lucide-react';
 import './Footer.css';
 import logo from '../assets/images/ashoka logo .png';
 
@@ -94,14 +94,35 @@ const Footer = () => {
             <Col lg={4} md={4} sm={12}>
               <div className="contact-block">
                 <h6 className="block-title">Contact</h6>
-                <div className="contact-line">4517 Washington Ave. Manchester, Kentucky 39495</div>
+                <div className="contact-line">
+                  GAT NO 1567, Near Shelar Crane Service Shelarvasti,
+                  Chikhali, Maharashtra – 411062
+                </div>
                 <div className="contact-item">
                   <div className="contact-icon"><MapPin size={16} /></div>
-                  <div>711-2880 Nulla St.</div>
+                  <div>
+                    Nano Spaces, ‘C’ Wing, Flat No. C-402, Near D.Y. Patil
+                    College, Ravet, Pune – 412101
+                  </div>
                 </div>
                 <div className="contact-item">
                   <div className="contact-icon"><Phone size={16} /></div>
-                  <div>+964 742 44 763 <span className="muted">Mon - Sat: 9 AM - 5 PM</span></div>
+                  <div>
+                    +91 99709 30890 | +91 88881 88194
+                    <span className="muted">  Mon – Sat: 9 AM – 7 PM</span>
+                  </div>
+                </div>
+                <div className="contact-item">
+                  <div className="contact-icon"><Phone size={16} /></div>
+                  <div>Customer Care: +91 77410 90767</div>
+                </div>
+                <div className="contact-item">
+                  <div className="contact-icon"><Mail size={16} /></div>
+                  <div>
+                    ashokproducts.sales@gmail.com
+                    <br />
+                    jaydeepthakur55@gmail.com
+                  </div>
                 </div>
               </div>
             </Col>
