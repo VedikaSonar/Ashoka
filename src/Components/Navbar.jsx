@@ -75,6 +75,10 @@ const Navbar = () => {
     } else {
       setAuthType(null);
       setAuthName('');
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('wishlistIds');
+      }
+      setWishlistCount(0);
     }
   }, [location]);
 
@@ -184,6 +188,9 @@ const Navbar = () => {
       localStorage.removeItem('wholesalerToken');
       localStorage.removeItem('wholesalerInfo');
       localStorage.removeItem('cartCount');
+      localStorage.removeItem('wishlistIds');
+      window.dispatchEvent(new Event('wishlist:update'));
+      window.dispatchEvent(new Event('cart:update'));
     }
     setAuthType(null);
     setAuthName('');
@@ -262,7 +269,7 @@ const Navbar = () => {
                 className="position-relative cursor-pointer text-decoration-none text-dark"
               >
                 <Heart size={24} />
-                {wishlistCount > 0 && (
+                {authType && wishlistCount > 0 && (
                   <span className="badge-custom">
                     {wishlistCount > 99 ? '99+' : wishlistCount}
                   </span>

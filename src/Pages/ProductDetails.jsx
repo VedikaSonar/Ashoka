@@ -110,6 +110,16 @@ const ProductDetails = () => {
   };
 
   useEffect(() => {
+    const handleWishlistUpdate = () => {
+      setWishlistIds(getInitialWishlist());
+    };
+    window.addEventListener('wishlist:update', handleWishlistUpdate);
+    return () => {
+      window.removeEventListener('wishlist:update', handleWishlistUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
       setError('');
@@ -151,6 +161,19 @@ const ProductDetails = () => {
   const handleToggleWishlist = (productId) => {
     setActionMessage('');
     setActionError('');
+    const token = getAuthToken();
+    if (!token) {
+      const msg = 'Please login as customer or wholesaler to use wishlist';
+      setActionError(msg);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'danger' },
+          }),
+        );
+      }
+      return;
+    }
     const exists = wishlistIds.includes(productId);
     const updated = exists
       ? wishlistIds.filter((pid) => pid !== productId)
@@ -360,11 +383,11 @@ const ProductDetails = () => {
                     <div className="product-price d-flex align-items-center gap-2 mb-3">
                       {product.oldPrice > 0 && (
                         <span className="old-price text-muted text-decoration-line-through">
-                          ${product.oldPrice.toFixed(2)}
+                          ₹{product.oldPrice.toFixed(2)}
                         </span>
                       )}
                       <span className="current-price fw-bold fs-4">
-                        ${product.price.toFixed(2)}
+                        ₹{product.price.toFixed(2)}
                       </span>
                     </div>
                     {product.description && (
@@ -416,7 +439,20 @@ const ProductDetails = () => {
                         variant="outline-secondary"
                         onClick={() => handleToggleWishlist(product.id)}
                       >
-                        <Heart size={18} className="me-2" />
+                        <Heart
+                          size={18}
+                          className="me-2"
+                          color={
+                            wishlistIds.includes(product.id) && getAuthToken()
+                              ? '#ff4d4f'
+                              : undefined
+                          }
+                          fill={
+                            wishlistIds.includes(product.id) && getAuthToken()
+                              ? '#ff4d4f'
+                              : 'none'
+                          }
+                        />
                         Add to Wishlist
                       </Button>
                     </div>

@@ -164,6 +164,16 @@ const Home = () => {
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    const handleWishlistUpdate = () => {
+      setWishlistIds(getInitialWishlist());
+    };
+    window.addEventListener('wishlist:update', handleWishlistUpdate);
+    return () => {
+      window.removeEventListener('wishlist:update', handleWishlistUpdate);
+    };
+  }, []);
+
   const persistWishlist = (ids) => {
     setWishlistIds(ids);
     if (typeof localStorage !== 'undefined') {
@@ -181,6 +191,19 @@ const Home = () => {
     }
     setActionMessage('');
     setActionError('');
+    const token = getAuthToken();
+    if (!token) {
+      const msg = 'Please login as customer or wholesaler to use wishlist';
+      setActionError(msg);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'danger' },
+          }),
+        );
+      }
+      return;
+    }
     const exists = wishlistIds.includes(productId);
     const updated = exists
       ? wishlistIds.filter((id) => id !== productId)
@@ -499,8 +522,16 @@ const Home = () => {
                         >
                           <Heart
                             size={18}
-                            color={wishlistIds.includes(product.id) ? '#ff4d4f' : '#ffffff'}
-                            fill={wishlistIds.includes(product.id) ? '#ff4d4f' : 'none'}
+                            color={
+                              wishlistIds.includes(product.id) && getAuthToken()
+                                ? '#ff4d4f'
+                                : '#ffffff'
+                            }
+                            fill={
+                              wishlistIds.includes(product.id) && getAuthToken()
+                                ? '#ff4d4f'
+                                : 'none'
+                            }
                           />
                         </button>
                         <button

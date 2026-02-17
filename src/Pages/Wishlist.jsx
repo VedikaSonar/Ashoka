@@ -38,6 +38,11 @@ const Wishlist = () => {
 
   useEffect(() => {
     const fetchWishlistProducts = async () => {
+      const token = getAuthToken();
+      if (!token) {
+        setProducts([]);
+        return;
+      }
       if (!wishlistIds.length) {
         setProducts([]);
         return;
@@ -62,6 +67,16 @@ const Wishlist = () => {
 
     fetchWishlistProducts();
   }, [wishlistIds]);
+
+  useEffect(() => {
+    const handleWishlistUpdate = () => {
+      setWishlistIds(getStoredWishlistIds());
+    };
+    window.addEventListener('wishlist:update', handleWishlistUpdate);
+    return () => {
+      window.removeEventListener('wishlist:update', handleWishlistUpdate);
+    };
+  }, []);
 
   const persistWishlist = (ids) => {
     setWishlistIds(ids);
