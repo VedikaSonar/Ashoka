@@ -60,18 +60,35 @@ const mapApiProductToView = (product) => {
   const wholesalePrice = product.wholesaler_price ? Number(product.wholesaler_price) : 0;
   let price = retailPrice;
   if (typeof localStorage !== 'undefined') {
+    const userToken = localStorage.getItem('userToken');
     const wholesalerToken = localStorage.getItem('wholesalerToken');
-    if (wholesalerToken && wholesalePrice > 0) {
-      price = wholesalePrice;
+    if (wholesalerToken) {
+      if (wholesalePrice > 0) {
+        price = wholesalePrice;
+      } else if (retailPrice > 0) {
+        price = retailPrice;
+      } else {
+        price = 0;
+      }
+    } else if (userToken) {
+      if (retailPrice > 0) {
+        price = retailPrice;
+      } else {
+        price = 0;
+      }
     } else if (retailPrice > 0) {
       price = retailPrice;
     } else if (wholesalePrice > 0) {
       price = wholesalePrice;
+    } else {
+      price = 0;
     }
   } else if (retailPrice > 0) {
     price = retailPrice;
   } else if (wholesalePrice > 0) {
     price = wholesalePrice;
+  } else {
+    price = 0;
   }
   const oldPrice = price > 0 ? price * 1.1 : 0;
   const discount =

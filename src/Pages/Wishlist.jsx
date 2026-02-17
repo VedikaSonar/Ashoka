@@ -278,18 +278,35 @@ const Wishlist = () => {
                         : 0;
                       let unitPrice = retailPrice;
                       if (typeof localStorage !== 'undefined') {
+                        const userToken = localStorage.getItem('userToken');
                         const wholesalerToken = localStorage.getItem('wholesalerToken');
-                        if (wholesalerToken && wholesalePrice > 0) {
-                          unitPrice = wholesalePrice;
+                        if (wholesalerToken) {
+                          if (wholesalePrice > 0) {
+                            unitPrice = wholesalePrice;
+                          } else if (retailPrice > 0) {
+                            unitPrice = retailPrice;
+                          } else {
+                            unitPrice = 0;
+                          }
+                        } else if (userToken) {
+                          if (retailPrice > 0) {
+                            unitPrice = retailPrice;
+                          } else {
+                            unitPrice = 0;
+                          }
                         } else if (retailPrice > 0) {
                           unitPrice = retailPrice;
                         } else if (wholesalePrice > 0) {
                           unitPrice = wholesalePrice;
+                        } else {
+                          unitPrice = 0;
                         }
                       } else if (retailPrice > 0) {
                         unitPrice = retailPrice;
                       } else if (wholesalePrice > 0) {
                         unitPrice = wholesalePrice;
+                      } else {
+                        unitPrice = 0;
                       }
                       return (
                         <tr key={product.id}>
