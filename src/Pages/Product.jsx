@@ -253,14 +253,28 @@ const Product = () => {
       }
       const msg = 'Item added. Redirecting to checkout.';
       setActionMessage(msg);
-      if (typeof localStorage !== 'undefined') {
-        const raw = localStorage.getItem('cartCount');
-        const current = parseInt(raw || '0', 10);
-        const next = Number.isNaN(current) || current < 0 ? 1 : current + 1;
-        localStorage.setItem('cartCount', String(next));
+      try {
+        const countResponse = await fetch(`${API_BASE}/cart`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const countData = await countResponse.json();
+        if (countResponse.ok) {
+          const items = countData && Array.isArray(countData.items) ? countData.items : [];
+          const count = items.length;
+          const safeCount = Number.isNaN(count) || count < 0 ? 0 : count;
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('cartCount', String(safeCount));
+          }
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('cart:update'));
+          }
+        }
+      } catch (error) {
+        console.error(error);
       }
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('cart:update'));
         window.dispatchEvent(
           new CustomEvent('app:toast', {
             detail: { message: msg, variant: 'success' },

@@ -34,6 +34,7 @@ const Checkout = () => {
   const [billingEmail, setBillingEmail] = useState('');
   const [billingPhone, setBillingPhone] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
+  const [customerTypeLabel, setCustomerTypeLabel] = useState('Retail Customer');
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -70,6 +71,12 @@ const Checkout = () => {
     const userInfoRaw = localStorage.getItem('userInfo');
     const wholesalerInfoRaw = localStorage.getItem('wholesalerInfo');
     const infoRaw = userInfoRaw || wholesalerInfoRaw;
+    const wholesalerToken = localStorage.getItem('wholesalerToken');
+    if (wholesalerToken) {
+      setCustomerTypeLabel('Wholesaler');
+    } else {
+      setCustomerTypeLabel('Retail Customer');
+    }
     if (infoRaw) {
       try {
         const info = JSON.parse(infoRaw);
@@ -162,6 +169,10 @@ const Checkout = () => {
             <span className="dot">•</span>
             <span className="active">Checkout</span>
           </nav>
+          <div className="mt-2 small">
+            You are logged in as{' '}
+            <span className="fw-semibold">{customerTypeLabel}</span>
+          </div>
         </Container>
       </section>
 

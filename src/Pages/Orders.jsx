@@ -19,6 +19,7 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+   const [customerType, setCustomerType] = useState('Retail Customer');
 
   useEffect(() => {
     const token = getAuthToken();
@@ -27,14 +28,23 @@ const Orders = () => {
       return;
     }
 
+    if (typeof localStorage !== 'undefined') {
+      const wholesalerToken = localStorage.getItem('wholesalerToken');
+      if (wholesalerToken) {
+        setCustomerType('Wholesaler');
+      } else {
+        setCustomerType('Retail Customer');
+      }
+    }
+
     const fetchOrders = async () => {
       setLoading(true);
       setError('');
       try {
         const response = await fetch(`${API_BASE}/orders`, {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
         const data = await response.json();
         if (!response.ok) {
@@ -61,6 +71,10 @@ const Orders = () => {
             <span className="dot">•</span>
             <span className="active">My Orders</span>
           </nav>
+          <div className="mt-2 small">
+            You are logged in as{' '}
+            <span className="fw-semibold">{customerType}</span>
+          </div>
         </Container>
       </section>
 
@@ -135,4 +149,3 @@ const Orders = () => {
 };
 
 export default Orders;
-

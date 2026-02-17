@@ -21,6 +21,17 @@ const Cart = () => {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [customerType, setCustomerType] = useState('Retail Customer');
+
+  useEffect(() => {
+    if (typeof localStorage === 'undefined') return;
+    const wholesalerToken = localStorage.getItem('wholesalerToken');
+    if (wholesalerToken) {
+      setCustomerType('Wholesaler');
+    } else {
+      setCustomerType('Retail Customer');
+    }
+  }, []);
 
   const loadCart = async () => {
     const token = getAuthToken();
@@ -152,6 +163,10 @@ const Cart = () => {
             <span className="dot">•</span>
             <span className="active">Cart</span>
           </nav>
+          <div className="mt-2 small">
+            You are logged in as{' '}
+            <span className="fw-semibold">{customerType}</span>
+          </div>
         </Container>
       </section>
 
