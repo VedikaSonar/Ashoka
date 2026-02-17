@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Alert, Button, Table, Pagination, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, X } from 'lucide-react';
+import { ShoppingBag, X, Heart } from 'lucide-react';
 import './Product.css';
 
 const API_BASE = 'http://127.0.0.1:5000/api';
@@ -237,8 +237,14 @@ const Wishlist = () => {
           )}
 
           {!loading && !products.length && !error && (
-            <div className="text-center py-5">
-              <p className="mb-3">Your wishlist is empty.</p>
+            <div className="wishlist-empty text-center py-5">
+              <div className="wishlist-empty-icon mb-3">
+                <Heart size={36} />
+              </div>
+              <h3 className="mb-2">Your wishlist is empty</h3>
+              <p className="text-muted mb-3">
+                Browse our products and tap the heart icon to save your favourites here.
+              </p>
               <Button as={Link} to="/shop" variant="success">
                 Go to Shop
               </Button>
@@ -248,17 +254,21 @@ const Wishlist = () => {
           {!loading && products.length > 0 && (
             <Row className="justify-content-center">
               <Col lg={10}>
-                <div className="d-flex justify-content-between align-items-center mb-3 wishlist-header">
-                  <div>
-                    <h3 className="mb-1">Your Saved Items</h3>
-                    <p className="text-muted mb-0">
-                      Keep products you love here and move them to cart when you are ready.
-                    </p>
+                <div className="wishlist-card">
+                  <div className="d-flex justify-content-between align-items-center mb-3 wishlist-header">
+                    <div className="wishlist-header-text">
+                      <h3 className="mb-1">Your Saved Items</h3>
+                      <p className="text-muted mb-0">
+                        Keep products you love here and move them to cart when you are ready.
+                      </p>
+                    </div>
+                    <div className="wishlist-header-badge">
+                      <Badge bg="success" pill>
+                        {totalItems} item{totalItems !== 1 ? 's' : ''}
+                      </Badge>
+                    </div>
                   </div>
-                  <Badge bg="success" pill>
-                    {totalItems} item{totalItems !== 1 ? 's' : ''}
-                  </Badge>
-                </div>
+                  <div className="wishlist-table-wrapper">
                 <Table responsive bordered hover className="align-middle wishlist-table wishlist-table-styled">
                   <thead>
                     <tr>
@@ -365,43 +375,45 @@ const Wishlist = () => {
                     })}
                   </tbody>
                 </Table>
-
-                {totalPages > 1 && (
-                  <div className="pagination-wrapper d-flex justify-content-center mt-3">
-                    <Pagination>
-                      <Pagination.Prev
-                        disabled={safePage === 1}
-                        onClick={() => {
-                          if (safePage > 1) {
-                            setCurrentPage(safePage - 1);
-                          }
-                        }}
-                      />
-                      {Array.from({ length: totalPages }).map((_, index) => {
-                        const pageNumber = index + 1;
-                        return (
-                          <Pagination.Item
-                            key={pageNumber}
-                            active={safePage === pageNumber}
-                            onClick={() => setCurrentPage(pageNumber)}
-                          >
-                            {pageNumber}
-                          </Pagination.Item>
-                        );
-                      })}
-                      <Pagination.Next
-                        disabled={safePage === totalPages}
-                        onClick={() => {
-                          if (safePage < totalPages) {
-                            setCurrentPage(safePage + 1);
-                          }
-                        }}
-                      />
-                    </Pagination>
                   </div>
-                )}
 
-                <div className="text-end mt-3" />
+                  {totalPages > 1 && (
+                    <div className="pagination-wrapper d-flex justify-content-center mt-3">
+                      <Pagination>
+                        <Pagination.Prev
+                          disabled={safePage === 1}
+                          onClick={() => {
+                            if (safePage > 1) {
+                              setCurrentPage(safePage - 1);
+                            }
+                          }}
+                        />
+                        {Array.from({ length: totalPages }).map((_, index) => {
+                          const pageNumber = index + 1;
+                          return (
+                            <Pagination.Item
+                              key={pageNumber}
+                              active={safePage === pageNumber}
+                              onClick={() => setCurrentPage(pageNumber)}
+                            >
+                              {pageNumber}
+                            </Pagination.Item>
+                          );
+                        })}
+                        <Pagination.Next
+                          disabled={safePage === totalPages}
+                          onClick={() => {
+                            if (safePage < totalPages) {
+                              setCurrentPage(safePage + 1);
+                            }
+                          }}
+                        />
+                      </Pagination>
+                    </div>
+                  )}
+
+                  <div className="text-end mt-3" />
+                </div>
               </Col>
             </Row>
           )}

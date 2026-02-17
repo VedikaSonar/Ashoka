@@ -262,12 +262,32 @@
   background-color: #fff;
 }
 
+.wishlist-card {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 20px 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
 .wishlist-header h3 {
   font-weight: 700;
 }
 
 .wishlist-header p {
   font-size: 0.9rem;
+}
+
+.wishlist-header {
+  gap: 12px;
+}
+
+.wishlist-header-text {
+  max-width: 420px;
+}
+
+.wishlist-header-badge {
+  display: flex;
+  align-items: center;
 }
 
 .wishlist-table-styled thead {
@@ -284,6 +304,34 @@
 
 .wishlist-product-name {
   font-size: 1.05rem;
+}
+
+.wishlist-table-wrapper {
+  width: 100%;
+}
+
+.wishlist-empty {
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.05);
+}
+
+.wishlist-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fbe9e7, #ffebee);
+  color: #e53935;
+}
+
+.wishlist-empty-icon svg {
+  display: block;
 }
 .product-detail-gallery {
   gap: 16px;
@@ -415,6 +463,57 @@
 }
 
 @media (max-width: 767.98px) {
+  .wishlist-card {
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+
+  .wishlist-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .wishlist-header-badge {
+    margin-top: 4px;
+  }
+
+  .wishlist-table-styled thead {
+    display: none;
+  }
+
+  .wishlist-table-styled tbody tr {
+    display: block;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  }
+
+  .wishlist-table-styled tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-top: none;
+  }
+
+  .wishlist-table-styled tbody td:first-child {
+    justify-content: center;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .wishlist-table-styled tbody td:last-child {
+    border-bottom: none;
+  }
+
+  .wishlist-table-styled .cart-img-wrapper {
+    margin-bottom: 0;
+  }
+
+  .wishlist-table-styled .wishlist-product-name {
+    margin-bottom: 2px;
+  }
+
   .product-banner {
     min-height: 220px;
   }

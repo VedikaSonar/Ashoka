@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Table, Alert, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Table, Alert, Spinner, Badge } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import './Product.css';
 
@@ -112,6 +112,7 @@ const Orders = () => {
                         <th>Order ID</th>
                         <th>Date</th>
                         <th>Status</th>
+                        <th>Payment</th>
                         <th>Items</th>
                         <th>Total Amount (₹)</th>
                       </tr>
@@ -126,11 +127,32 @@ const Orders = () => {
                           ? order.items.reduce((sum, it) => sum + (it.quantity || 0), 0)
                           : 0;
                         const total = Number(order.total_amount || 0);
+                        const paymentMethod = (order.payment_method || 'cod').toLowerCase();
+                        const paymentStatus = (order.payment_status || 'pending').toLowerCase();
+
+                        let paymentLabel = 'Cash on Delivery';
+                        if (paymentMethod !== 'cod') {
+                          paymentLabel = 'Online (Razorpay)';
+                        }
+
+                        let paymentVariant = 'secondary';
+                        if (paymentStatus === 'paid') paymentVariant = 'success';
+                        else if (paymentStatus === 'failed') paymentVariant = 'danger';
+                        else if (paymentStatus === 'refunded') paymentVariant = 'warning';
+
                         return (
                           <tr key={order.id}>
                             <td>#{order.id}</td>
                             <td>{dateStr}</td>
                             <td className="text-capitalize">{order.status || 'pending'}</td>
+                            <td>
+                              <div className="d-flex flex-column gap-1">
+                                <span>{paymentLabel}</span>
+                                <Badge bg={paymentVariant} pill className="text-uppercase">
+                                  {paymentStatus}
+                                </Badge>
+                              </div>
+                            </td>
                             <td>{itemCount}</td>
                             <td>₹{total.toFixed(2)}</td>
                           </tr>
