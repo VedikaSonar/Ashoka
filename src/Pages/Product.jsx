@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Form, Pagination, Alert } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { LayoutGrid, List, Filter, ShoppingBag, Eye, Heart, ChevronRight } from 'lucide-react';
 import './Product.css';
 
@@ -61,6 +61,7 @@ const mapApiProductToView = (product) => {
 };
 
 const Product = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -195,7 +196,23 @@ const Product = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Failed to add item for purchase');
       }
-      setActionMessage('Item added. You can proceed to checkout from your cart.');
+      const msg = 'Item added. Redirecting to checkout.';
+      setActionMessage(msg);
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('cartCount');
+        const current = parseInt(raw || '0', 10);
+        const next = Number.isNaN(current) || current < 0 ? 1 : current + 1;
+        localStorage.setItem('cartCount', String(next));
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cart:update'));
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'success' },
+          }),
+        );
+      }
+      navigate('/checkout');
     } catch (err) {
       setActionError(err.message || 'Something went wrong while processing buy now');
     }
@@ -206,11 +223,11 @@ const Product = () => {
       {/* Banner Section */}
       <section className="product-banner text-center text-white py-5">
         <Container>
-          <h1 className="banner-title display-4 fw-bold mb-3">Product</h1>
+          <h1 className="banner-title display-4 fw-bold mb-3">Products</h1>
           <nav className="breadcrumb-nav d-flex justify-content-center align-items-center gap-2">
             <span>Home</span>
             <span className="dot">•</span>
-            <span className="active">Product</span>
+            <span className="active">Products</span>
           </nav>
         </Container>
       </section>
@@ -309,11 +326,11 @@ const Product = () => {
                       <div className="product-price d-flex justify-content-center gap-2">
                         {product.oldPrice > 0 && (
                           <span className="old-price text-muted text-decoration-line-through">
-                            ${product.oldPrice.toFixed(2)}
+                            ₹{product.oldPrice.toFixed(2)}
                           </span>
                         )}
                         <span className="current-price fw-bold">
-                          ${product.price.toFixed(2)}
+                          ₹{product.price.toFixed(2)}
                         </span>
                       </div>
                       <div className="mt-3 d-flex justify-content-center gap-2">

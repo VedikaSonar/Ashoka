@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Navbar from './Components/Navbar';
 import Footer from './Components/Footer';
 import Home from './Pages/Home';
@@ -20,12 +20,6 @@ import Checkout from './Pages/Checkout';
 import './App.css';
 
 const ScrollToTop = () => {
-  const location = useLocation();
-
-  if (typeof window !== 'undefined') {
-    window.scrollTo(0, 0);
-  }
-
   return null;
 };
 

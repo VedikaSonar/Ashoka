@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Alert } from 'react-bootstrap';
 import { ShoppingBag, Eye, Heart, Star } from 'lucide-react';
 import './Product.css';
@@ -82,6 +82,7 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const navigate = useNavigate();
 
   const fetchRelatedProducts = async (baseProduct) => {
     setRelatedLoading(true);
@@ -229,7 +230,23 @@ const ProductDetails = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Failed to add item for purchase');
       }
-      setActionMessage('Item added. You can proceed to checkout from your cart.');
+      const msg = 'Item added. Redirecting to checkout.';
+      setActionMessage(msg);
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('cartCount');
+        const current = parseInt(raw || '0', 10);
+        const next = Number.isNaN(current) || current < 0 ? qty : current + qty;
+        localStorage.setItem('cartCount', String(next));
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cart:update'));
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'success' },
+          }),
+        );
+      }
+      navigate('/checkout');
     } catch (err) {
       setActionError(err.message || 'Something went wrong while processing buy now');
     }

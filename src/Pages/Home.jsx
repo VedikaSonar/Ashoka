@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Button, Carousel, Nav, Alert, Spinner } from 'react-bootstrap';
 import { ChevronRight, ChevronLeft, Wheat, Box, Container as PackageIcon, Layers, ShoppingBag, Star, Heart, Eye, Leaf, Award, ShieldCheck, Quote } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import productImg from '../assets/images/product 5.png';
 import Footer from '../Components/Footer';
 import './Home.css';
@@ -141,6 +141,7 @@ const Home = () => {
 
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
   const [testiIndex, setTestiIndex] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const target = new Date();
@@ -239,6 +240,53 @@ const Home = () => {
       }
     } catch (err) {
       setActionError(err.message || 'Something went wrong while adding to cart');
+    }
+  };
+
+  const handleBuyNow = async (productId, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    setActionMessage('');
+    setActionError('');
+    const token = getAuthToken();
+    if (!token) {
+      setActionError('Please login as customer or wholesaler to buy products');
+      return;
+    }
+    try {
+      const response = await fetch(`${API_BASE}/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add item for purchase');
+      }
+      const msg = 'Item added. Redirecting to checkout.';
+      setActionMessage(msg);
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('cartCount');
+        const current = parseInt(raw || '0', 10);
+        const next = Number.isNaN(current) || current < 0 ? 1 : current + 1;
+        localStorage.setItem('cartCount', String(next));
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cart:update'));
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'success' },
+          }),
+        );
+      }
+      navigate('/checkout');
+    } catch (err) {
+      setActionError(err.message || 'Something went wrong while processing buy now');
     }
   };
 
@@ -492,6 +540,15 @@ const Home = () => {
                           <>₹{product.price.toFixed(2)}</>
                         )}
                       </p>
+                      <div className="mt-2">
+                        <Button
+                          variant="success"
+                          size="sm"
+                          onClick={(event) => handleBuyNow(product.id, event)}
+                        >
+                          BUY NOW
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Link>

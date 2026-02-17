@@ -43,7 +43,22 @@ const UserLogin = () => {
       setStep(2);
       setMessage(data.message || 'OTP sent successfully');
     } catch (err) {
-      setError(err.message || 'Something went wrong');
+      const msg = err.message || 'Something went wrong';
+      setError(msg);
+      const lower = msg.toLowerCase();
+      if (
+        lower.includes('no account found') ||
+        lower.includes('registration is mandatory') ||
+        lower.includes('please register')
+      ) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('app:toast', {
+              detail: { message: 'Please register first', variant: 'danger' },
+            }),
+          );
+        }
+      }
     } finally {
       setLoading(false);
     }
