@@ -35,7 +35,7 @@ const WholesalerRegister = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, phone }),
+        body: JSON.stringify({ email, phone, mode: 'register' }),
       });
 
       const data = await response.json();

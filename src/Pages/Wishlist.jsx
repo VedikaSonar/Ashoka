@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Alert, Button, Table, Pagination } from 'react-bootstrap';
+import { Container, Row, Col, Alert, Button, Table, Pagination, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingBag, X } from 'lucide-react';
+import { ShoppingBag, X } from 'lucide-react';
 import './Product.css';
 
 const API_BASE = 'http://127.0.0.1:5000/api';
@@ -34,7 +34,6 @@ const Wishlist = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [quantities, setQuantities] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -54,15 +53,6 @@ const Wishlist = () => {
         const list = Array.isArray(data.products) ? data.products : [];
         const filtered = list.filter((p) => wishlistIds.includes(p.id));
         setProducts(filtered);
-        setQuantities((prev) => {
-          const next = { ...prev };
-          filtered.forEach((p) => {
-            if (!next[p.id]) {
-              next[p.id] = 1;
-            }
-          });
-          return next;
-        });
       } catch (err) {
         setError(err.message || 'Something went wrong while loading wishlist');
       } finally {
@@ -78,6 +68,9 @@ const Wishlist = () => {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('wishlistIds', JSON.stringify(ids));
     }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('wishlist:update'));
+    }
   };
 
   const handleRemove = (productId) => {
@@ -86,10 +79,18 @@ const Wishlist = () => {
     const updated = wishlistIds.filter((id) => id !== productId);
     persistWishlist(updated);
     setProducts((prev) => prev.filter((p) => p.id !== productId));
-    setMessage('Removed from wishlist');
+    const msg = 'Removed from wishlist';
+    setMessage(msg);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('app:toast', {
+          detail: { message: msg, variant: 'success' },
+        }),
+      );
+    }
   };
 
-  const handleAddToCart = async (productId, quantity = 1) => {
+  const handleAddToCart = async (productId) => {
     setMessage('');
     setError('');
     const token = getAuthToken();
@@ -104,13 +105,28 @@ const Wishlist = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ product_id: productId, quantity }),
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.message || 'Failed to add item to cart');
       }
-      setMessage('Item added to cart');
+      const msg = 'Item added to cart';
+      setMessage(msg);
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('cartCount');
+        const current = parseInt(raw || '0', 10);
+        const next = Number.isNaN(current) || current < 0 ? 1 : current + 1;
+        localStorage.setItem('cartCount', String(next));
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cart:update'));
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'success' },
+          }),
+        );
+      }
     } catch (err) {
       setError(err.message || 'Something went wrong while adding to cart');
     }
@@ -168,15 +184,24 @@ const Wishlist = () => {
           {!loading && products.length > 0 && (
             <Row className="justify-content-center">
               <Col lg={10}>
-                <Table responsive bordered hover className="align-middle wishlist-table">
+                <div className="d-flex justify-content-between align-items-center mb-3 wishlist-header">
+                  <div>
+                    <h3 className="mb-1">Your Saved Items</h3>
+                    <p className="text-muted mb-0">
+                      Keep products you love here and move them to cart when you are ready.
+                    </p>
+                  </div>
+                  <Badge bg="success" pill>
+                    {totalItems} item{totalItems !== 1 ? 's' : ''}
+                  </Badge>
+                </div>
+                <Table responsive bordered hover className="align-middle wishlist-table wishlist-table-styled">
                   <thead>
                     <tr>
                       <th className="text-center">Images</th>
                       <th>Product</th>
                       <th className="text-center">Unit Price</th>
-                      <th className="text-center">Quantity</th>
-                      <th className="text-center">Total</th>
-                      <th className="text-center">Remove</th>
+                      <th className="text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -184,7 +209,6 @@ const Wishlist = () => {
                       const unitPrice = Number(
                         product.customer_price || product.wholesaler_price || 0,
                       );
-                      const qty = quantities[product.id] || 1;
                       return (
                         <tr key={product.id}>
                           <td className="text-center">
@@ -205,7 +229,7 @@ const Wishlist = () => {
                               to={`/product/${product.id}`}
                               className="text-decoration-none text-dark"
                             >
-                              <div className="fw-semibold">{product.name}</div>
+                              <div className="fw-semibold wishlist-product-name">{product.name}</div>
                             </Link>
                             <div className="small text-muted">
                               {product.category && product.category.name
@@ -214,48 +238,26 @@ const Wishlist = () => {
                             </div>
                           </td>
                           <td className="text-center">
-                            ${unitPrice.toFixed(2)}
+                            ₹{unitPrice.toFixed(2)}
                           </td>
                           <td className="text-center">
-                            <div className="qty-control">
+                            <div className="d-flex justify-content-center gap-2">
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={() => handleAddToCart(product.id)}
+                              >
+                                <ShoppingBag size={14} className="me-1" />
+                                Add to Cart
+                              </Button>
                               <button
                                 type="button"
-                                className="qty-btn"
-                                onClick={() =>
-                                  setQuantities((prev) => ({
-                                    ...prev,
-                                    [product.id]: qty > 1 ? qty - 1 : 1,
-                                  }))
-                                }
+                                className="cart-remove-btn"
+                                onClick={() => handleRemove(product.id)}
                               >
-                                −
-                              </button>
-                              <span className="qty-value">{qty}</span>
-                              <button
-                                type="button"
-                                className="qty-btn"
-                                onClick={() =>
-                                  setQuantities((prev) => ({
-                                    ...prev,
-                                    [product.id]: qty + 1,
-                                  }))
-                                }
-                              >
-                                +
+                                <X size={16} />
                               </button>
                             </div>
-                          </td>
-                          <td className="text-center">
-                            ${(unitPrice * qty).toFixed(2)}
-                          </td>
-                          <td className="text-center">
-                            <button
-                              type="button"
-                              className="cart-remove-btn"
-                              onClick={() => handleRemove(product.id)}
-                            >
-                              <X size={16} />
-                            </button>
                           </td>
                         </tr>
                       );
@@ -298,20 +300,7 @@ const Wishlist = () => {
                   </div>
                 )}
 
-                <div className="text-end mt-3">
-                  <Button
-                    variant="success"
-                    onClick={() => {
-                      products.forEach((product) => {
-                        const qty = quantities[product.id] || 1;
-                        handleAddToCart(product.id, qty);
-                      });
-                    }}
-                  >
-                    <ShoppingBag size={16} className="me-1" />
-                    Add All To Cart
-                  </Button>
-                </div>
+                <div className="text-end mt-3" />
               </Col>
             </Row>
           )}

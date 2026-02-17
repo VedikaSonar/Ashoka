@@ -41,6 +41,18 @@ const Cart = () => {
         throw new Error(data.message || 'Failed to load cart');
       }
       setCart(data);
+      const items = data && Array.isArray(data.items) ? data.items : [];
+      const count = items.reduce(
+        (sum, item) => sum + (typeof item.quantity === 'number' ? item.quantity : 0),
+        0,
+      );
+      const safeCount = Number.isNaN(count) || count < 0 ? 0 : count;
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('cartCount', String(safeCount));
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cart:update'));
+      }
     } catch (err) {
       setError(err.message || 'Something went wrong while loading cart');
     } finally {
@@ -74,7 +86,15 @@ const Cart = () => {
         throw new Error(data.message || 'Failed to update cart');
       }
       await loadCart();
-      setMessage('Cart updated');
+      const msg = 'Cart updated';
+      setMessage(msg);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'success' },
+          }),
+        );
+      }
     } catch (err) {
       setError(err.message || 'Something went wrong while updating cart');
     }
@@ -102,7 +122,15 @@ const Cart = () => {
         throw new Error(data.message || 'Failed to remove item');
       }
       await loadCart();
-      setMessage('Item removed from cart');
+      const msg = 'Item removed from cart';
+      setMessage(msg);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'success' },
+          }),
+        );
+      }
     } catch (err) {
       setError(err.message || 'Something went wrong while removing item');
     }
