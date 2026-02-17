@@ -232,7 +232,7 @@ const Cart = () => {
                             </div>
                           </td>
                           <td className="text-center">
-                            ${Number(item.price || 0).toFixed(2)}
+                            ₹{Number(item.price || 0).toFixed(2)}
                           </td>
                           <td className="text-center">
                             <div className="qty-control">
@@ -261,7 +261,7 @@ const Cart = () => {
                             </div>
                           </td>
                           <td className="text-center">
-                            ${Number(item.itemTotal || 0).toFixed(2)}
+                            ₹{Number(item.itemTotal || 0).toFixed(2)}
                           </td>
                           <td className="text-center">
                             <button
@@ -342,13 +342,13 @@ const Cart = () => {
                     <div className="d-flex justify-content-between mb-2">
                       <span>Subtotal</span>
                       <span className="fw-bold">
-                        ${cart ? Number(cart.total || 0).toFixed(2) : '0.00'}
+                        ₹{cart ? Number(cart.total || 0).toFixed(2) : '0.00'}
                       </span>
                     </div>
                     <div className="d-flex justify-content-between mb-3">
                       <span>Total</span>
                       <span className="fw-bold">
-                        ${cart ? Number(cart.total || 0).toFixed(2) : '0.00'}
+                        ₹{cart ? Number(cart.total || 0).toFixed(2) : '0.00'}
                       </span>
                     </div>
                     <Button as={Link} to="/checkout" variant="success" className="w-100">

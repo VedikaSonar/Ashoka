@@ -153,20 +153,20 @@ const Checkout = () => {
                       className="checkout-order-row d-flex justify-content-between"
                     >
                       <span>{item.name}</span>
-                      <span>${item.total.toFixed(2)}</span>
+                      <span>₹{item.total.toFixed(2)}</span>
                     </div>
                   ))}
                   <div className="checkout-order-row d-flex justify-content-between">
                     <span>Cart Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="checkout-order-row d-flex justify-content-between">
                     <span>Shipping</span>
-                    <span>${shipping.toFixed(2)}</span>
+                    <span>₹{shipping.toFixed(2)}</span>
                   </div>
                   <div className="checkout-order-footer d-flex justify-content-between">
                     <span>Order Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₹{total.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -217,4 +217,3 @@ const Checkout = () => {
 };
 
 export default Checkout;
-

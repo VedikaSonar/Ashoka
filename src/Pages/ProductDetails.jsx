@@ -549,7 +549,7 @@ const ProductDetails = () => {
                             <li>
                               <span className="meta-label">Price:</span>
                               <span className="meta-value">
-                                ${product.price.toFixed(2)}
+                                ₹{product.price.toFixed(2)}
                               </span>
                             </li>
                           </ul>
@@ -711,11 +711,11 @@ const ProductDetails = () => {
                             <div className="product-price d-flex justify-content-center gap-2">
                               {item.oldPrice > 0 && (
                                 <span className="old-price text-muted text-decoration-line-through">
-                                  ${item.oldPrice.toFixed(2)}
+                                  ₹{item.oldPrice.toFixed(2)}
                                 </span>
                               )}
                               <span className="current-price fw-bold">
-                                ${item.price.toFixed(2)}
+                                ₹{item.price.toFixed(2)}
                               </span>
                             </div>
                           </div>
