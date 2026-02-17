@@ -261,6 +261,30 @@
   border: 1px solid #f0f0f0;
   background-color: #fff;
 }
+
+.wishlist-header h3 {
+  font-weight: 700;
+}
+
+.wishlist-header p {
+  font-size: 0.9rem;
+}
+
+.wishlist-table-styled thead {
+  background: linear-gradient(90deg, #f5fbe8, #e6f6d0);
+}
+
+.wishlist-table-styled thead th {
+  border-bottom: none;
+}
+
+.wishlist-table-styled tbody tr:hover {
+  background-color: #fafef3;
+}
+
+.wishlist-product-name {
+  font-size: 1.05rem;
+}
 .product-detail-gallery {
   gap: 16px;
 }

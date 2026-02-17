@@ -96,6 +96,9 @@ const Product = () => {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('wishlistIds', JSON.stringify(ids));
     }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('wishlist:update'));
+    }
   };
 
   const handleToggleWishlist = (productId, event) => {
@@ -110,7 +113,15 @@ const Product = () => {
       ? wishlistIds.filter((id) => id !== productId)
       : [...wishlistIds, productId];
     persistWishlist(updated);
-    setActionMessage(exists ? 'Removed from wishlist' : 'Added to wishlist');
+    const msg = exists ? 'Removed from wishlist' : 'Added to wishlist';
+    setActionMessage(msg);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('app:toast', {
+          detail: { message: msg, variant: 'success' },
+        }),
+      );
+    }
   };
 
   const handleAddToCart = async (productId, event) => {
@@ -138,7 +149,22 @@ const Product = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Failed to add item to cart');
       }
-      setActionMessage('Item added to cart');
+      const msg = 'Item added to cart';
+      setActionMessage(msg);
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('cartCount');
+        const current = parseInt(raw || '0', 10);
+        const next = Number.isNaN(current) || current < 0 ? 1 : current + 1;
+        localStorage.setItem('cartCount', String(next));
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cart:update'));
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'success' },
+          }),
+        );
+      }
     } catch (err) {
       setActionError(err.message || 'Something went wrong while adding to cart');
     }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Alert, Button, Table, Pagination } from 'react-bootstrap';
+import { Container, Row, Col, Alert, Button, Table, Pagination, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, X } from 'lucide-react';
 import './Product.css';
@@ -68,6 +68,9 @@ const Wishlist = () => {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('wishlistIds', JSON.stringify(ids));
     }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('wishlist:update'));
+    }
   };
 
   const handleRemove = (productId) => {
@@ -76,7 +79,15 @@ const Wishlist = () => {
     const updated = wishlistIds.filter((id) => id !== productId);
     persistWishlist(updated);
     setProducts((prev) => prev.filter((p) => p.id !== productId));
-    setMessage('Removed from wishlist');
+    const msg = 'Removed from wishlist';
+    setMessage(msg);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('app:toast', {
+          detail: { message: msg, variant: 'success' },
+        }),
+      );
+    }
   };
 
   const handleAddToCart = async (productId) => {
@@ -100,7 +111,22 @@ const Wishlist = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Failed to add item to cart');
       }
-      setMessage('Item added to cart');
+      const msg = 'Item added to cart';
+      setMessage(msg);
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('cartCount');
+        const current = parseInt(raw || '0', 10);
+        const next = Number.isNaN(current) || current < 0 ? 1 : current + 1;
+        localStorage.setItem('cartCount', String(next));
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cart:update'));
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'success' },
+          }),
+        );
+      }
     } catch (err) {
       setError(err.message || 'Something went wrong while adding to cart');
     }
@@ -158,7 +184,18 @@ const Wishlist = () => {
           {!loading && products.length > 0 && (
             <Row className="justify-content-center">
               <Col lg={10}>
-                <Table responsive bordered hover className="align-middle wishlist-table">
+                <div className="d-flex justify-content-between align-items-center mb-3 wishlist-header">
+                  <div>
+                    <h3 className="mb-1">Your Saved Items</h3>
+                    <p className="text-muted mb-0">
+                      Keep products you love here and move them to cart when you are ready.
+                    </p>
+                  </div>
+                  <Badge bg="success" pill>
+                    {totalItems} item{totalItems !== 1 ? 's' : ''}
+                  </Badge>
+                </div>
+                <Table responsive bordered hover className="align-middle wishlist-table wishlist-table-styled">
                   <thead>
                     <tr>
                       <th className="text-center">Images</th>
@@ -192,7 +229,7 @@ const Wishlist = () => {
                               to={`/product/${product.id}`}
                               className="text-decoration-none text-dark"
                             >
-                              <div className="fw-semibold">{product.name}</div>
+                              <div className="fw-semibold wishlist-product-name">{product.name}</div>
                             </Link>
                             <div className="small text-muted">
                               {product.category && product.category.name

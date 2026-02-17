@@ -1,9 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Container, Nav, Navbar as BootstrapNavbar, NavDropdown, Button } from 'react-bootstrap';
+import { Container, Nav, Navbar as BootstrapNavbar, NavDropdown, Button, Alert } from 'react-bootstrap';
 import { Phone, ChevronDown, Heart, ShoppingBag, Menu, Salad, User } from 'lucide-react';
 import logo from '../assets/images/ashoka logo .png';
 import './Navbar.css';
+
+const API_BASE = 'http://127.0.0.1:5000/api';
+
+const getWishlistCountFromStorage = () => {
+  if (typeof localStorage === 'undefined') return 0;
+  try {
+    const data = localStorage.getItem('wishlistIds');
+    if (!data) return 0;
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed)) return parsed.length;
+    return 0;
+  } catch {
+    return 0;
+  }
+};
+
+const getCartCountFromStorage = () => {
+  if (typeof localStorage === 'undefined') return 0;
+  const raw = localStorage.getItem('cartCount');
+  const parsed = parseInt(raw || '0', 10);
+  if (Number.isNaN(parsed) || parsed < 0) return 0;
+  return parsed;
+};
 
 const Navbar = () => {
   const location = useLocation();
@@ -11,6 +34,10 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [authType, setAuthType] = useState(null);
   const [authName, setAuthName] = useState('');
+  const [wishlistCount, setWishlistCount] = useState(getWishlistCountFromStorage);
+  const [cartCount, setCartCount] = useState(getCartCountFromStorage);
+  const [toast, setToast] = useState(null);
+  const toastTimerRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -51,6 +78,99 @@ const Navbar = () => {
     }
   }, [location]);
 
+  useEffect(() => {
+    const updateWishlistCount = () => {
+      setWishlistCount(getWishlistCountFromStorage());
+    };
+
+    const updateCartCount = () => {
+      setCartCount(getCartCountFromStorage());
+    };
+
+    updateWishlistCount();
+    updateCartCount();
+
+    const handleWishlistEvent = () => updateWishlistCount();
+    const handleCartEvent = () => updateCartCount();
+    const handleStorage = (event) => {
+      if (event.key === 'wishlistIds') {
+        updateWishlistCount();
+      }
+      if (event.key === 'cartCount') {
+        updateCartCount();
+      }
+    };
+
+    window.addEventListener('wishlist:update', handleWishlistEvent);
+    window.addEventListener('cart:update', handleCartEvent);
+    window.addEventListener('storage', handleStorage);
+
+    if (typeof localStorage !== 'undefined') {
+      const token =
+        localStorage.getItem('userToken') || localStorage.getItem('wholesalerToken');
+      if (token) {
+        fetch(`${API_BASE}/cart`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((response) =>
+            response
+              .json()
+              .then((data) => ({ ok: response.ok, data }))
+              .catch(() => ({ ok: false })),
+          )
+          .then((result) => {
+            if (!result || !result.ok) return;
+            const items = Array.isArray(result.data.items) ? result.data.items : [];
+            const count = items.reduce(
+              (sum, item) => sum + (typeof item.quantity === 'number' ? item.quantity : 0),
+              0,
+            );
+            const safeCount = Number.isNaN(count) || count < 0 ? 0 : count;
+            localStorage.setItem('cartCount', String(safeCount));
+            setCartCount(safeCount);
+          })
+          .catch(() => {});
+      }
+    }
+
+    return () => {
+      window.removeEventListener('wishlist:update', handleWishlistEvent);
+      window.removeEventListener('cart:update', handleCartEvent);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleToast = (event) => {
+      const detail = event.detail || {};
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
+      setToast({
+        message: detail.message || '',
+        variant: detail.variant || 'success',
+      });
+      const duration =
+        typeof detail.duration === 'number' && detail.duration > 0 ? detail.duration : 2500;
+      toastTimerRef.current = setTimeout(() => {
+        setToast(null);
+        toastTimerRef.current = null;
+      }, duration);
+    };
+
+    window.addEventListener('app:toast', handleToast);
+    return () => {
+      window.removeEventListener('app:toast', handleToast);
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
+    };
+  }, []);
+
   const getInitial = (value) => {
     if (!value || typeof value !== 'string') return '';
     return value.trim().charAt(0).toUpperCase();
@@ -63,6 +183,7 @@ const Navbar = () => {
       localStorage.removeItem('userAddress');
       localStorage.removeItem('wholesalerToken');
       localStorage.removeItem('wholesalerInfo');
+      localStorage.removeItem('cartCount');
     }
     setAuthType(null);
     setAuthName('');
@@ -147,12 +268,22 @@ const Navbar = () => {
                 className="position-relative cursor-pointer text-decoration-none text-dark"
               >
                 <Heart size={24} />
+                {wishlistCount > 0 && (
+                  <span className="badge-custom">
+                    {wishlistCount > 99 ? '99+' : wishlistCount}
+                  </span>
+                )}
               </Link>
               <Link
                 to="/cart"
                 className="position-relative cursor-pointer text-decoration-none text-dark"
               >
                 <ShoppingBag size={24} />
+                {cartCount > 0 && (
+                  <span className="badge-custom">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
               </Link>
               {authType ? (
                 <NavDropdown
@@ -219,6 +350,22 @@ const Navbar = () => {
           </BootstrapNavbar.Collapse>
         </Container>
       </BootstrapNavbar>
+      {toast && toast.message && (
+        <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 2000 }}>
+          <Alert
+            variant={toast.variant}
+            className="shadow-sm mb-0 d-flex align-items-center justify-content-between"
+          >
+            <span>{toast.message}</span>
+            <button
+              type="button"
+              className="btn-close ms-2"
+              aria-label="Close"
+              onClick={() => setToast(null)}
+            />
+          </Alert>
+        </div>
+      )}
     </div>
   );
 };
