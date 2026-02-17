@@ -296,16 +296,17 @@ const Navbar = () => {
                           <User size={18} />
                         )}
                       </div>
+                      {authType === 'wholesaler' && (
+                        <span className="badge bg-warning text-dark small">
+                          Wholesaler
+                        </span>
+                      )}
                     </div>
                   }
                 >
                   <NavDropdown.Item
                     onClick={() => {
-                      if (authType === 'wholesaler') {
-                        navigate('/wholesaler-dashboard');
-                      } else {
-                        navigate('/my-profile');
-                      }
+                      navigate('/my-profile');
                     }}
                   >
                     My Profile
