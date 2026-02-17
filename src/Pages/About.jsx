@@ -1,153 +1,115 @@
 import React from 'react';
-import { Container, Row, Col, Button } from 'react-bootstrap';
-import { Star, Quote } from 'lucide-react';
+import { Container, Row, Col } from 'react-bootstrap';
 import productImg from '../assets/images/product 5.png';
 import './About.css';
 
 const About = () => {
-  const pillarCards = [
-    { title: 'Quality Sourcing' },
-    { title: 'Traditional Expertise' },
-    { title: 'Modern Manufacturing' },
-  ];
-
-  const missionCards = [
-    {
-      title: 'Our Mission',
-      text: 'To provide natural, nutritious and affordable food products for every household.',
-    },
-    {
-      title: 'Our Vision',
-      text: 'To become a globally trusted brand for authentic Indian staples.',
-    },
-    {
-      title: 'Our Promise',
-      text: 'To keep purity, quality and taste at the heart of everything we make.',
-    },
-  ];
-
-  const testimonials = [
-    {
-      name: 'Ralph Edwards',
-      role: 'Home Chef',
-      text: 'Excellent product quality and taste. Ashoka has become a staple in our kitchen.',
-    },
-    {
-      name: 'Jerome Bell',
-      role: 'Restaurant Owner',
-      text: 'Ashoka products are consistently fresh and flavourful. Highly recommended!',
-    },
-    {
-      name: 'Annette Black',
-      role: 'Food Blogger',
-      text: 'We love Ashoka’s besan and dals. Always pure, aromatic and delicious.',
-    },
-  ];
-
   return (
     <div className="about-page">
-      <section className="about-hero-banner text-center text-white">
+      <section className="about-hero-strip">
         <Container>
-          <h1 className="about-hero-title">About</h1>
-          <nav className="about-breadcrumb">
-            <span>Home</span>
-            <span className="dot">•</span>
-            <span className="active">About</span>
-          </nav>
-        </Container>
-      </section>
-
-   
-
-      <section className="about-taste-section py-5">
-        <Container>
-          <Row className="g-4 align-items-center">
-            <Col lg={6}>
-              <div className="taste-left">
-                <h2 className="taste-title">The Taste India Trusts</h2>
-                <p className="taste-text">
-                  Ashoka Products are dedicated to delivering high‑quality Indian staples
-                  crafted with purity, tradition and care. From carefully sourced raw
-                  materials to hygienic manufacturing, every product reflects our
-                  commitment to authentic taste and trusted quality.
+          <Row className="align-items-center">
+            <Col lg={6} className="mb-4 mb-lg-0">
+              <div className="about-hero-text-block">
+                <p className="about-hero-quote">
+                  “Celebrating <span className="highlight">Health</span>
+                  <br />
+                  from decades”
                 </p>
-                <Button className="taste-btn">Explore Products</Button>
               </div>
             </Col>
             <Col lg={6}>
-              <Row className="g-3">
-                {pillarCards.map((card) => (
-                  <Col md={4} sm={4} xs={12} key={card.title}>
-                    <div className="pillar-card">
-                      <div className="pillar-image-wrap">
-                        <img src={productImg} alt={card.title} className="pillar-image" />
-                      </div>
-                      <div className="pillar-title">{card.title}</div>
-                    </div>
-                  </Col>
-                ))}
-              </Row>
+              <div className="about-hero-image-block">
+                <div className="about-hero-people" />
+              </div>
             </Col>
           </Row>
         </Container>
       </section>
 
-      <section className="about-mission-section py-5">
+      <section className="about-principles-section">
         <Container>
-          <Row className="g-4">
-            {missionCards.map((card) => (
-              <Col lg={4} md={6} key={card.title}>
-                <div className="mission-card">
-                  <div className="mission-icon" />
-                  <h3 className="mission-title">{card.title}</h3>
-                  <p className="mission-text">{card.text}</p>
-                </div>
-              </Col>
-            ))}
+          <h2 className="about-section-heading text-center">Principles</h2>
+          <div className="about-principles-text">
+            <p>
+              Quality food products require unwavering dedication to quality at every level of
+              operation – from inspecting wheat and buying it, through transport, storage,
+              processing, packaging and distribution. Our decades of experience in wheat and wheat
+              products have taught us that the journey is a never ending one, there are always new
+              facts to learn, new practices to implement, and more sophisticated and productive
+              machinery to install.
+            </p>
+            <p>
+              We pride ourselves in being open to learning, willing to change, eager to verify – as
+              long as we believe these efforts will result in higher quality products that are
+              meaningful to our consumers.
+            </p>
+            <p>
+              Recognising that consumer expectations, too, are always changing, a key part of our
+              management effort is to be in constant touch with our customers. Our organization and
+              delivery systems are designed to ensure that this is built into our way of being.
+            </p>
+          </div>
+        </Container>
+      </section>
+
+      <section className="about-vision-mission-section">
+        <Container>
+          <Row className="g-4 align-items-start">
+            <Col lg={5}>
+              <div className="about-grain-image-wrap">
+                <img src={productImg} alt="Grains in hands" className="about-grain-image" />
+              </div>
+            </Col>
+            <Col lg={7}>
+              <div className="about-vision-block">
+                <h3 className="about-subheading">Vision</h3>
+                <h4 className="about-vision-title">“TO BE FINEST FOOD PRODUCTS BRAND IN INDIA”</h4>
+                <p>
+                  To become a leading food providing brand in India. We aspire to motivate people to
+                  connect to natural food ingredients that cause no harm to the body as well as the
+                  environment. We solely promote health through our products and wish to keep
+                  delivering great-tasting, healthy, naturally processed food to every home.
+                </p>
+              </div>
+
+              <div className="about-mission-block">
+                <h3 className="about-subheading">Mission</h3>
+                <p>
+                  We aim to adopt the international practices of procurement, processing, and
+                  packaging of wheat products and combine them with the highest standards of honesty
+                  and fairness. Our brand has become one of the most sought after brands of food
+                  products available in the market. It is the result of hard work, consistency, and
+                  dedication that we have managed to follow from decades.
+                </p>
+                <p>
+                  As a result, we have brought a dramatic change in certain aspects of flour milling
+                  industry in India. We are driven by a strong set of shared values and beliefs that
+                  practices need to undergo a consistent change in order to match the need of time.
+                  Our organizational culture enmeshes with great values and we have sustained it
+                  ever since.
+                </p>
+              </div>
+            </Col>
           </Row>
         </Container>
       </section>
 
-      <section className="about-banner-section">
+      <section className="about-certification-strip">
         <Container>
-          <div className="about-banner-inner">
-            <h3 className="about-banner-title">Quality You Can Taste. Purity You Can Trust.</h3>
-            <Button className="about-banner-btn">Shop Now</Button>
-          </div>
-        </Container>
-      </section>
-
-      <section className="about-testimonials-section py-5">
-        <Container>
-          <div className="about-testimonials-header">
-            <span className="about-testimonials-label">Customer Testimonials</span>
-            <h3 className="about-testimonials-title">
-              Delivering Authentic Quality, Loved by Many.
-            </h3>
-          </div>
-          <Row className="g-4">
-            {testimonials.map((t) => (
-              <Col lg={4} md={6} key={t.name}>
-                <div className="about-testimonial-card">
-                  <div className="about-testimonial-top">
-                    <div className="about-avatar-circle">{t.name.charAt(0)}</div>
-                    <div>
-                      <div className="about-testimonial-name">{t.name}</div>
-                      <div className="about-testimonial-role">{t.role}</div>
-                    </div>
-                  </div>
-                  <div className="about-testimonial-rating">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={14} fill="#ffb300" color="#ffb300" />
-                    ))}
-                  </div>
-                  <p className="about-testimonial-text">{t.text}</p>
-                  <div className="about-testimonial-quote">
-                    <Quote size={20} />
-                  </div>
-                </div>
-              </Col>
-            ))}
+          <Row className="justify-content-center g-3">
+            <Col xs={6} md={2}>
+              <div className="about-cert-badge">ISO 22000</div>
+            </Col>
+            <Col xs={6} md={2}>
+              <div className="about-cert-badge">ISO 9001</div>
+            </Col>
+            <Col xs={6} md={2}>
+              <div className="about-cert-badge">FSSAI</div>
+            </Col>
+            <Col xs={6} md={2}>
+              <div className="about-cert-badge">FSSC 22000</div>
+            </Col>
           </Row>
         </Container>
       </section>
