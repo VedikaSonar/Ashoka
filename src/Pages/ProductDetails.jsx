@@ -159,6 +159,8 @@ const ProductDetails = () => {
   const [totalReviews, setTotalReviews] = useState(0);
   const [newReviewRating, setNewReviewRating] = useState(5);
   const [newReviewComment, setNewReviewComment] = useState('');
+  const [canSubmitReview, setCanSubmitReview] = useState(false);
+  const [checkingReviewEligibility, setCheckingReviewEligibility] = useState(false);
   const navigate = useNavigate();
 
   const fetchRelatedProducts = async (baseProduct) => {
@@ -215,10 +217,10 @@ const ProductDetails = () => {
         } else {
           setRelatedProducts([]);
         }
-        if (data && data.id) {
-          fetchReviews(data.id, 1);
-        } else if (id) {
-          fetchReviews(id, 1);
+        const productIdToUse = data && data.id ? data.id : id;
+        if (productIdToUse) {
+          fetchReviews(productIdToUse, 1);
+          checkReviewEligibility(productIdToUse);
         }
       } catch (err) {
         setError(err.message || 'Something went wrong while loading product');
@@ -259,6 +261,43 @@ const ProductDetails = () => {
       setActionError(err.message || 'Something went wrong while loading reviews');
     } finally {
       setReviewsLoading(false);
+    }
+  };
+
+  const checkReviewEligibility = async (productId) => {
+    const token = getAuthToken();
+    if (!token || !productId) {
+      setCanSubmitReview(false);
+      return;
+    }
+    setCheckingReviewEligibility(true);
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/orders', {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        setCanSubmitReview(false);
+        return;
+      }
+      const orders = await response.json();
+      if (!Array.isArray(orders)) {
+        setCanSubmitReview(false);
+        return;
+      }
+      const hasCompletedOrder = orders.some((order) => {
+        if (!order || order.status !== 'delivered' || !Array.isArray(order.items)) {
+          return false;
+        }
+        return order.items.some((item) => item.product_id === Number(productId));
+      });
+      setCanSubmitReview(hasCompletedOrder);
+    } catch {
+      setCanSubmitReview(false);
+    } finally {
+      setCheckingReviewEligibility(false);
     }
   };
 
@@ -784,6 +823,11 @@ const ProductDetails = () => {
                           )}
                           <div className="product-review-form">
                             <h5 className="mb-3">Add a review</h5>
+                            {!canSubmitReview && !checkingReviewEligibility && (
+                              <div className="alert alert-info py-2 mb-3 small">
+                                You can submit a review after an order containing this product is delivered.
+                              </div>
+                            )}
                             <form
                               onSubmit={async (event) => {
                                 event.preventDefault();
@@ -793,6 +837,19 @@ const ProductDetails = () => {
                                 if (!token) {
                                   const msg =
                                     'Please login as customer or wholesaler to submit a review';
+                                  setActionError(msg);
+                                  if (typeof window !== 'undefined') {
+                                    window.dispatchEvent(
+                                      new CustomEvent('app:toast', {
+                                        detail: { message: msg, variant: 'danger' },
+                                      }),
+                                    );
+                                  }
+                                  return;
+                                }
+                                if (!canSubmitReview) {
+                                  const msg =
+                                    'You can submit a review after an order containing this product is delivered.';
                                   setActionError(msg);
                                   if (typeof window !== 'undefined') {
                                     window.dispatchEvent(
