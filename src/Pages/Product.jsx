@@ -39,6 +39,29 @@ const getInitialWishlist = () => {
   }
 };
 
+const isProductInCart = async (token, productId) => {
+  const response = await fetch(`${API_BASE}/cart`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to load cart');
+  }
+  const items = data && Array.isArray(data.items) ? data.items : [];
+  const targetId = Number(productId);
+  return items.some((item) => {
+    const itemProductId =
+      typeof item.product_id !== 'undefined'
+        ? Number(item.product_id)
+        : item.product && typeof item.product.id !== 'undefined'
+        ? Number(item.product.id)
+        : NaN;
+    return !Number.isNaN(itemProductId) && itemProductId === targetId;
+  });
+};
+
 const buildImageUrl = (imagePath) => {
   if (!imagePath) return FALLBACK_LIST_IMAGE;
   if (typeof imagePath !== 'string') return FALLBACK_LIST_IMAGE;
@@ -179,11 +202,21 @@ const Product = () => {
       return;
     }
     const exists = wishlistIds.includes(productId);
-    const updated = exists
-      ? wishlistIds.filter((id) => id !== productId)
-      : [...wishlistIds, productId];
+    if (exists) {
+      const msg = 'This product is already in your wishlist';
+      setActionMessage(msg);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'info' },
+          }),
+        );
+      }
+      return;
+    }
+    const updated = [...wishlistIds, productId];
     persistWishlist(updated);
-    const msg = exists ? 'Removed from wishlist' : 'Added to wishlist';
+    const msg = 'Added to wishlist';
     setActionMessage(msg);
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
@@ -207,6 +240,19 @@ const Product = () => {
       return;
     }
     try {
+      const alreadyInCart = await isProductInCart(token, productId);
+      if (alreadyInCart) {
+        const msg = 'This product is already in your cart';
+        setActionMessage(msg);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('app:toast', {
+              detail: { message: msg, variant: 'info' },
+            }),
+          );
+        }
+        return;
+      }
       const response = await fetch(`${API_BASE}/cart/add`, {
         method: 'POST',
         headers: {

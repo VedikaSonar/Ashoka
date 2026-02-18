@@ -39,6 +39,29 @@ const getInitialWishlist = () => {
   }
 };
 
+const isProductInCart = async (token, productId) => {
+  const response = await fetch(`${API_BASE}/cart`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to load cart');
+  }
+  const items = data && Array.isArray(data.items) ? data.items : [];
+  const targetId = Number(productId);
+  return items.some((item) => {
+    const itemProductId =
+      typeof item.product_id !== 'undefined'
+        ? Number(item.product_id)
+        : item.product && typeof item.product.id !== 'undefined'
+        ? Number(item.product.id)
+        : NaN;
+    return !Number.isNaN(itemProductId) && itemProductId === targetId;
+  });
+};
+
 const buildImageUrl = (imagePath) => {
   if (!imagePath) return FALLBACK_DETAIL_IMAGE;
   if (typeof imagePath !== 'string') return FALLBACK_DETAIL_IMAGE;
@@ -103,6 +126,7 @@ const mapApiProductToView = (product) => {
   return {
     id: product.id,
     name: product.name,
+    sku: product.sku || '',
     category: categoryName.toUpperCase(),
     price,
     oldPrice,
@@ -127,6 +151,14 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [reviewsTotalPages, setReviewsTotalPages] = useState(1);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [averageRating, setAverageRating] = useState(null);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [newReviewRating, setNewReviewRating] = useState(5);
+  const [newReviewComment, setNewReviewComment] = useState('');
   const navigate = useNavigate();
 
   const fetchRelatedProducts = async (baseProduct) => {
@@ -183,6 +215,11 @@ const ProductDetails = () => {
         } else {
           setRelatedProducts([]);
         }
+        if (data && data.id) {
+          fetchReviews(data.id, 1);
+        } else if (id) {
+          fetchReviews(id, 1);
+        }
       } catch (err) {
         setError(err.message || 'Something went wrong while loading product');
       } finally {
@@ -192,6 +229,38 @@ const ProductDetails = () => {
 
     fetchProduct();
   }, [id]);
+
+  const fetchReviews = async (productId, page = 1) => {
+    setReviewsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/reviews/product/${productId}?page=${page}&limit=5`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to load reviews');
+      }
+      const list = Array.isArray(data.reviews) ? data.reviews : [];
+      setReviews(list);
+      setReviewsPage(data.currentPage || page);
+      setReviewsTotalPages(data.totalPages || 1);
+      if (typeof data.totalReviews === 'number') {
+        setTotalReviews(data.totalReviews);
+      } else {
+        setTotalReviews(list.length);
+      }
+      if (typeof data.averageRating === 'number') {
+        setAverageRating(data.averageRating);
+      } else if (data.averageRating !== null && data.averageRating !== undefined) {
+        const parsed = Number(data.averageRating);
+        setAverageRating(Number.isNaN(parsed) ? null : parsed);
+      } else {
+        setAverageRating(null);
+      }
+    } catch (err) {
+      setActionError(err.message || 'Something went wrong while loading reviews');
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
 
   const persistWishlist = (ids) => {
     setWishlistIds(ids);
@@ -221,11 +290,21 @@ const ProductDetails = () => {
       return;
     }
     const exists = wishlistIds.includes(productId);
-    const updated = exists
-      ? wishlistIds.filter((pid) => pid !== productId)
-      : [...wishlistIds, productId];
+    if (exists) {
+      const msg = 'This product is already in your wishlist';
+      setActionMessage(msg);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'info' },
+          }),
+        );
+      }
+      return;
+    }
+    const updated = [...wishlistIds, productId];
     persistWishlist(updated);
-    const msg = exists ? 'Removed from wishlist' : 'Added to wishlist';
+    const msg = 'Added to wishlist';
     setActionMessage(msg);
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
@@ -245,6 +324,19 @@ const ProductDetails = () => {
       return;
     }
     try {
+      const alreadyInCart = await isProductInCart(token, productId);
+      if (alreadyInCart) {
+        const msg = 'This product is already in your cart';
+        setActionMessage(msg);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('app:toast', {
+              detail: { message: msg, variant: 'info' },
+            }),
+          );
+        }
+        return;
+      }
       const response = await fetch(`${API_BASE}/cart/add`, {
         method: 'POST',
         headers: {
@@ -408,7 +500,7 @@ const ProductDetails = () => {
                   </div>
                 </Col>
                 <Col md={7}>
-                  <div className="product-info">
+                    <div className="product-info">
                     <div className="d-flex align-items-center gap-2 mb-2">
                       <span className="badge-detail-status">
                         Featured
@@ -418,12 +510,21 @@ const ProductDetails = () => {
                           <Star
                             key={value}
                             size={16}
-                            fill="#ffc107"
+                            fill={
+                              averageRating && value <= Math.round(averageRating)
+                                ? '#ffc107'
+                                : 'none'
+                            }
                             stroke="#ffc107"
                           />
                         ))}
                         <span className="small text-muted ms-1">
-                          (0 Reviews)
+                          {averageRating
+                            ? `${averageRating.toFixed(1)} / 5`
+                            : 'No rating yet'}
+                        </span>
+                        <span className="small text-muted ms-1">
+                          ({totalReviews} Review{totalReviews === 1 ? '' : 's'})
                         </span>
                       </div>
                     </div>
@@ -510,7 +611,7 @@ const ProductDetails = () => {
                     <div className="product-detail-meta mt-4 small text-muted">
                       <div>
                         <span className="meta-label">SKU:</span>
-                        <span className="meta-value">N/A</span>
+                        <span className="meta-value">{product.sku || 'N/A'}</span>
                       </div>
                       <div>
                         <span className="meta-label">Categories:</span>
@@ -581,50 +682,209 @@ const ProductDetails = () => {
                       {activeTab === 'reviews' && (
                         <div className="product-detail-tab-pane">
                           <h5 className="mb-4">
-                            03 reviews for "{product.name}"
+                            {totalReviews} review{totalReviews === 1 ? '' : 's'} for "{product.name}"
                           </h5>
                           <div className="product-review-list mb-4">
-                            {[1, 2, 3].map((value) => (
-                              <div
-                                key={value}
-                                className="product-review-item d-flex gap-3 mb-3"
-                              >
-                                <div className="product-review-avatar">
-                                  {product.name.charAt(0).toUpperCase()}
-                                </div>
-                                <div className="product-review-content">
-                                  <div className="d-flex justify-content-between mb-1">
-                                    <strong>Sample Customer</strong>
-                                    <div className="product-detail-rating d-flex align-items-center gap-1">
-                                      {[1, 2, 3, 4, 5].map((star) => (
-                                        <Star
-                                          key={star}
-                                          size={14}
-                                          fill="#ffc107"
-                                          stroke="#ffc107"
-                                        />
-                                      ))}
+                            {reviewsLoading && (
+                              <div className="text-muted small mb-2">Loading reviews...</div>
+                            )}
+                            {!reviewsLoading && reviews.length === 0 && (
+                              <div className="text-muted small mb-2">
+                                No reviews yet. Be the first to review this product.
+                              </div>
+                            )}
+                            {!reviewsLoading &&
+                              reviews.map((review) => {
+                                const customerName =
+                                  review.customer && review.customer.name
+                                    ? review.customer.name
+                                    : review.customer && review.customer.phone
+                                    ? review.customer.phone
+                                    : review.customer && review.customer.email
+                                    ? review.customer.email
+                                    : '';
+                                const wholesalerName =
+                                  review.wholesaler && review.wholesaler.name
+                                    ? review.wholesaler.name
+                                    : review.wholesaler && review.wholesaler.business_name
+                                    ? review.wholesaler.business_name
+                                    : review.wholesaler && review.wholesaler.phone
+                                    ? review.wholesaler.phone
+                                    : review.wholesaler && review.wholesaler.email
+                                    ? review.wholesaler.email
+                                    : '';
+                                const displayName =
+                                  customerName || wholesalerName || 'Anonymous';
+                                const avatarLetter =
+                                  displayName && displayName.length > 0
+                                    ? displayName.charAt(0).toUpperCase()
+                                    : product.name.charAt(0).toUpperCase();
+                                const createdAt =
+                                  review.created_at || review.createdAt || review.updated_at || review.updatedAt;
+                                const dateLabel = createdAt
+                                  ? new Date(createdAt).toLocaleDateString()
+                                  : '';
+                                return (
+                                  <div
+                                    key={review.id}
+                                    className="product-review-item d-flex gap-3 mb-3"
+                                  >
+                                    <div className="product-review-avatar">
+                                      {avatarLetter}
+                                    </div>
+                                    <div className="product-review-content">
+                                      <div className="d-flex justify-content-between mb-1">
+                                        <strong>{displayName}</strong>
+                                        <div className="product-detail-rating d-flex align-items-center gap-1">
+                                          {[1, 2, 3, 4, 5].map((star) => (
+                                            <Star
+                                              key={star}
+                                              size={14}
+                                              fill={star <= review.rating ? '#ffc107' : 'none'}
+                                              stroke="#ffc107"
+                                            />
+                                          ))}
+                                        </div>
+                                      </div>
+                                      {dateLabel && (
+                                        <div className="small text-muted mb-1">
+                                          {dateLabel}
+                                        </div>
+                                      )}
+                                      <p className="mb-0">
+                                        {review.comment || 'No comment provided.'}
+                                      </p>
                                     </div>
                                   </div>
-                                  <div className="small text-muted mb-1">
-                                    March 10, 2024
-                                  </div>
-                                  <p className="mb-0">
-                                    This is a sample review block to showcase how
-                                    customer feedback will appear on this page.
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
+                                );
+                              })}
                           </div>
+                          {reviewsTotalPages > 1 && (
+                            <div className="d-flex gap-2 mb-4">
+                              <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                disabled={reviewsPage <= 1 || reviewsLoading}
+                                onClick={() => fetchReviews(product.id, reviewsPage - 1)}
+                              >
+                                Previous
+                              </Button>
+                              <div className="small d-flex align-items-center">
+                                Page {reviewsPage} of {reviewsTotalPages}
+                              </div>
+                              <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                disabled={reviewsPage >= reviewsTotalPages || reviewsLoading}
+                                onClick={() => fetchReviews(product.id, reviewsPage + 1)}
+                              >
+                                Next
+                              </Button>
+                            </div>
+                          )}
                           <div className="product-review-form">
                             <h5 className="mb-3">Add a review</h5>
                             <form
-                              onSubmit={(event) => {
+                              onSubmit={async (event) => {
                                 event.preventDefault();
-                                setActionMessage('Review submitted');
+                                setActionMessage('');
+                                setActionError('');
+                                const token = getAuthToken();
+                                if (!token) {
+                                  const msg =
+                                    'Please login as customer or wholesaler to submit a review';
+                                  setActionError(msg);
+                                  if (typeof window !== 'undefined') {
+                                    window.dispatchEvent(
+                                      new CustomEvent('app:toast', {
+                                        detail: { message: msg, variant: 'danger' },
+                                      }),
+                                    );
+                                  }
+                                  return;
+                                }
+                                try {
+                                  const response = await fetch(`${API_BASE}/reviews`, {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      Authorization: `Bearer ${token}`,
+                                    },
+                                    body: JSON.stringify({
+                                      product_id: product.id,
+                                      rating: newReviewRating,
+                                      comment: newReviewComment.trim() || null,
+                                    }),
+                                  });
+                                  const data = await response.json();
+                                  if (!response.ok) {
+                                    const msg =
+                                      data && data.message
+                                        ? data.message
+                                        : 'Failed to submit review';
+                                    setActionError(msg);
+                                    if (typeof window !== 'undefined') {
+                                      window.dispatchEvent(
+                                        new CustomEvent('app:toast', {
+                                          detail: { message: msg, variant: 'danger' },
+                                        }),
+                                      );
+                                    }
+                                    return;
+                                  }
+                                  const msg =
+                                    'Review submitted successfully and is pending approval';
+                                  setActionMessage(msg);
+                                  setNewReviewComment('');
+                                  setNewReviewRating(5);
+                                  if (typeof window !== 'undefined') {
+                                    window.dispatchEvent(
+                                      new CustomEvent('app:toast', {
+                                        detail: { message: msg, variant: 'success' },
+                                      }),
+                                    );
+                                  }
+                                  fetchReviews(product.id, 1);
+                                } catch (err) {
+                                  const msg =
+                                    err && err.message
+                                      ? err.message
+                                      : 'Something went wrong while submitting review';
+                                  setActionError(msg);
+                                  if (typeof window !== 'undefined') {
+                                    window.dispatchEvent(
+                                      new CustomEvent('app:toast', {
+                                        detail: { message: msg, variant: 'danger' },
+                                      }),
+                                    );
+                                  }
+                                }
                               }}
                             >
+                              <div className="mb-3">
+                                <label className="form-label small">
+                                  Your rating
+                                </label>
+                                <div className="d-flex align-items-center gap-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                      key={star}
+                                      type="button"
+                                      className="btn btn-link p-0 me-1"
+                                      onClick={() => setNewReviewRating(star)}
+                                    >
+                                      <Star
+                                        size={18}
+                                        fill={star <= newReviewRating ? '#ffc107' : 'none'}
+                                        stroke="#ffc107"
+                                      />
+                                    </button>
+                                  ))}
+                                  <span className="small text-muted ms-2">
+                                    {newReviewRating} / 5
+                                  </span>
+                                </div>
+                              </div>
                               <div className="mb-3">
                                 <label className="form-label small">
                                   Your review
@@ -633,43 +893,9 @@ const ProductDetails = () => {
                                   className="form-control"
                                   rows={4}
                                   required
+                                  value={newReviewComment}
+                                  onChange={(e) => setNewReviewComment(e.target.value)}
                                 />
-                              </div>
-                              <Row className="g-3">
-                                <Col md={6}>
-                                  <label className="form-label small">
-                                    Your name
-                                  </label>
-                                  <input
-                                    type="text"
-                                    className="form-control"
-                                    required
-                                  />
-                                </Col>
-                                <Col md={6}>
-                                  <label className="form-label small">
-                                    Your email
-                                  </label>
-                                  <input
-                                    type="email"
-                                    className="form-control"
-                                    required
-                                  />
-                                </Col>
-                              </Row>
-                              <div className="form-check mt-3 mb-3">
-                                <input
-                                  className="form-check-input"
-                                  type="checkbox"
-                                  id="review-save-info"
-                                />
-                                <label
-                                  className="form-check-label small"
-                                  htmlFor="review-save-info"
-                                >
-                                  Save my name and email in this browser for
-                                  the next time I comment.
-                                </label>
                               </div>
                               <Button type="submit" variant="success">
                                 Submit Now
@@ -700,28 +926,58 @@ const ProductDetails = () => {
               )}
               {!relatedLoading && !relatedError && relatedProducts.length > 0 && (
                 <Row className="g-4">
-                  {relatedProducts.map((item) => (
-                    <Col key={item.id} lg={3} md={6}>
-                      <Link
-                        to={`/product/${item.id}`}
-                        className="text-decoration-none text-dark"
-                      >
+                  {relatedProducts.map((item) => {
+                    const isInWishlist = wishlistIds.includes(item.id) && getAuthToken();
+                    return (
+                      <Col key={item.id} lg={3} md={6}>
                         <div className="product-card text-center h-100">
                           <div className="product-img-wrapper position-relative mb-1">
                             {item.discount && (
                               <span className="discount-badge">{item.discount}</span>
                             )}
-                            <img src={item.image} alt={item.name} className="img-fluid product-img" />
+                            <Link
+                              to={`/product/${item.id}`}
+                              className="d-block"
+                            >
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="img-fluid product-img"
+                              />
+                            </Link>
                             <div className="product-actions d-flex justify-content-center gap-2">
-                              <div className="action-btn cart-btn">
+                              <button
+                                type="button"
+                                className="action-btn cart-btn"
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  handleAddToCart(item.id, 1);
+                                }}
+                              >
                                 <ShoppingBag size={20} />
-                              </div>
-                              <div className="action-btn view-btn">
+                              </button>
+                              <Link
+                                to={`/product/${item.id}`}
+                                className="action-btn view-btn d-inline-flex align-items-center justify-content-center"
+                              >
                                 <Eye size={20} />
-                              </div>
-                              <div className="action-btn wishlist-btn">
-                                <Heart size={20} />
-                              </div>
+                              </Link>
+                              <button
+                                type="button"
+                                className="action-btn wishlist-btn"
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  handleToggleWishlist(item.id);
+                                }}
+                              >
+                                <Heart
+                                  size={20}
+                                  color={isInWishlist ? '#ff4d4f' : undefined}
+                                  fill={isInWishlist ? '#ff4d4f' : 'none'}
+                                />
+                              </button>
                             </div>
                           </div>
                           <div className="product-info border-top pt-4">
@@ -729,7 +985,12 @@ const ProductDetails = () => {
                               {item.category}
                             </p>
                             <h5 className="product-name fw-bold mb-3">
-                              {item.name}
+                              <Link
+                                to={`/product/${item.id}`}
+                                className="text-decoration-none text-dark"
+                              >
+                                {item.name}
+                              </Link>
                             </h5>
                             <div className="product-price d-flex justify-content-center gap-2">
                               {item.oldPrice > 0 && (
@@ -743,9 +1004,9 @@ const ProductDetails = () => {
                             </div>
                           </div>
                         </div>
-                      </Link>
-                    </Col>
-                  ))}
+                      </Col>
+                    );
+                  })}
                 </Row>
               )}
               {!relatedLoading && !relatedError && relatedProducts.length === 0 && (

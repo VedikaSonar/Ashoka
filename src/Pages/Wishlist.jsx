@@ -145,6 +145,38 @@ const Wishlist = () => {
       return;
     }
     try {
+      const responseCart = await fetch(`${API_BASE}/cart`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const dataCart = await responseCart.json();
+      if (!responseCart.ok) {
+        throw new Error(dataCart.message || 'Failed to load cart');
+      }
+      const itemsCart = dataCart && Array.isArray(dataCart.items) ? dataCart.items : [];
+      const targetId = Number(productId);
+      const alreadyInCart = itemsCart.some((item) => {
+        const itemProductId =
+          typeof item.product_id !== 'undefined'
+            ? Number(item.product_id)
+            : item.product && typeof item.product.id !== 'undefined'
+            ? Number(item.product.id)
+            : NaN;
+        return !Number.isNaN(itemProductId) && itemProductId === targetId;
+      });
+      if (alreadyInCart) {
+        const msg = 'This product is already in your cart';
+        setMessage(msg);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('app:toast', {
+              detail: { message: msg, variant: 'info' },
+            }),
+          );
+        }
+        return;
+      }
       const response = await fetch(`${API_BASE}/cart/add`, {
         method: 'POST',
         headers: {
