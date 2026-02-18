@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import './Checkout.css';
 
 const API_BASE = 'http://127.0.0.1:5000/api';
@@ -16,7 +16,11 @@ const getAuthToken = () => {
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get('mode') || 'cart';
+  const isInstant = mode === 'instant';
   const [cart, setCart] = useState(null);
+  const [instantItem, setInstantItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -37,12 +41,64 @@ const Checkout = () => {
   const [customerTypeLabel, setCustomerTypeLabel] = useState('Retail Customer');
 
   useEffect(() => {
-    const fetchCart = async () => {
-      const token = getAuthToken();
-      if (!token) {
-        navigate('/auth');
-        return;
+    const token = getAuthToken();
+    if (!token) {
+      navigate('/auth');
+      return;
+    }
+
+    const loadInstantItem = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        if (typeof localStorage === 'undefined') {
+          throw new Error('Instant purchase is not available in this environment');
+        }
+        const raw = localStorage.getItem('instantPurchase');
+        if (!raw) {
+          throw new Error('No item selected for instant purchase');
+        }
+        let parsed = null;
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          throw new Error('Instant purchase data is invalid. Please try again.');
+        }
+        const pid = parsed.productId || parsed.product_id;
+        const qtyRaw = parsed.quantity || 1;
+        const qty = Number.isFinite(Number(qtyRaw)) && Number(qtyRaw) > 0 ? Number(qtyRaw) : 1;
+        if (!pid) {
+          throw new Error('Instant purchase item is missing. Please try again.');
+        }
+
+        const response = await fetch(`${API_BASE}/products/${pid}/priced`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to load product for instant purchase');
+        }
+        const effectivePrice = Number(data.effective_price || 0);
+        if (!Number.isFinite(effectivePrice) || effectivePrice <= 0) {
+          throw new Error('Price not available for instant purchase');
+        }
+        setInstantItem({
+          productId: data.id,
+          name: data.name,
+          price: effectivePrice,
+          quantity: qty,
+        });
+      } catch (err) {
+        setInstantItem(null);
+        setError(err.message || 'Something went wrong while preparing instant purchase');
+      } finally {
+        setLoading(false);
       }
+    };
+
+    const fetchCart = async () => {
       setLoading(true);
       setError('');
       try {
@@ -63,8 +119,12 @@ const Checkout = () => {
       }
     };
 
-    fetchCart();
-  }, [navigate]);
+    if (isInstant) {
+      loadInstantItem();
+    } else {
+      fetchCart();
+    }
+  }, [navigate, isInstant]);
 
   useEffect(() => {
     if (typeof localStorage === 'undefined') return;
@@ -105,8 +165,25 @@ const Checkout = () => {
     }
   }, []);
 
-  const items = cart && Array.isArray(cart.items) ? cart.items : [];
-  const subtotal = cart ? Number(cart.total || 0) : 0;
+  const cartItems = cart && Array.isArray(cart.items) ? cart.items : [];
+  const instantItems = instantItem
+    ? [
+        {
+          id: instantItem.productId,
+          product: { name: instantItem.name },
+          quantity: instantItem.quantity,
+          itemTotal: instantItem.price * instantItem.quantity,
+        },
+      ]
+    : [];
+  const items = isInstant ? instantItems : cartItems;
+  const subtotal = isInstant
+    ? instantItem
+      ? instantItem.price * instantItem.quantity
+      : 0
+    : cart
+      ? Number(cart.total || 0)
+      : 0;
   const shipping = 0;
   const total = subtotal + shipping;
 
@@ -256,8 +333,12 @@ const Checkout = () => {
       navigate('/auth');
       return;
     }
-    if (!items.length) {
+    if (!isInstant && !items.length) {
       setError('Your cart is empty. Please add items before placing an order.');
+      return;
+    }
+    if (isInstant && !instantItem) {
+      setError('No item selected for instant purchase.');
       return;
     }
     if (!address1 || !city || !stateName || !postcode || !billingPhone) {
@@ -266,6 +347,12 @@ const Checkout = () => {
     }
     const shippingAddress = buildShippingAddress();
     if (paymentMethod === 'razorpay') {
+      if (isInstant) {
+        setError(
+          'Online payment is not available for instant purchase. Please choose Cash on Delivery or use the cart checkout.'
+        );
+        return;
+      }
       await handleRazorpayPayment(token, shippingAddress);
       return;
     }
@@ -273,17 +360,27 @@ const Checkout = () => {
     setError('');
     setMessage('');
     try {
-      const response = await fetch(`${API_BASE}/orders/place`, {
+      const url = isInstant ? `${API_BASE}/orders/instant` : `${API_BASE}/orders/place`;
+      const body = isInstant
+        ? {
+            product_id: instantItem.productId,
+            quantity: instantItem.quantity,
+            shipping_address: shippingAddress,
+            payment_method: paymentMethod || 'cod',
+            notes: orderNotes,
+          }
+        : {
+            shipping_address: shippingAddress,
+            payment_method: paymentMethod || 'cod',
+            notes: orderNotes,
+          };
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          shipping_address: shippingAddress,
-          payment_method: paymentMethod || 'cod',
-          notes: orderNotes,
-        }),
+        body: JSON.stringify(body),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -297,6 +394,9 @@ const Checkout = () => {
             detail: { message: msg, variant: 'success' },
           }),
         );
+      }
+      if (isInstant && typeof localStorage !== 'undefined') {
+        localStorage.removeItem('instantPurchase');
       }
       navigate('/orders');
     } catch (err) {

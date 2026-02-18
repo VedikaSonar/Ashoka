@@ -267,41 +267,17 @@ const Product = () => {
       return;
     }
     try {
-      const response = await fetch(`${API_BASE}/cart/add`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ product_id: productId, quantity: 1 }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to add item for purchase');
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(
+          'instantPurchase',
+          JSON.stringify({
+            productId,
+            quantity: 1,
+          }),
+        );
       }
-      const msg = 'Item added. Redirecting to checkout.';
+      const msg = 'Redirecting to checkout.';
       setActionMessage(msg);
-      try {
-        const countResponse = await fetch(`${API_BASE}/cart`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const countData = await countResponse.json();
-        if (countResponse.ok) {
-          const items = countData && Array.isArray(countData.items) ? countData.items : [];
-          const count = items.length;
-          const safeCount = Number.isNaN(count) || count < 0 ? 0 : count;
-          if (typeof localStorage !== 'undefined') {
-            localStorage.setItem('cartCount', String(safeCount));
-          }
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new Event('cart:update'));
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      }
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('app:toast', {
@@ -309,7 +285,7 @@ const Product = () => {
           }),
         );
       }
-      navigate('/checkout');
+      navigate('/checkout?mode=instant');
     } catch (err) {
       setActionError(err.message || 'Something went wrong while processing buy now');
     }
