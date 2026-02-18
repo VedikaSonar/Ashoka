@@ -14,6 +14,17 @@ const getAuthToken = () => {
   return null;
 };
 
+const buildImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (typeof imagePath !== 'string') return null;
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  const baseUrl = API_BASE.replace('/api', '');
+  const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  return `${baseUrl}${normalizedPath}`;
+};
+
 const Orders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -25,6 +36,7 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [actionMessage, setActionMessage] = useState('');
   const [actionError, setActionError] = useState('');
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
@@ -79,6 +91,30 @@ const Orders = () => {
     setShowDetails(true);
     setActionMessage('');
     setActionError('');
+    const token = getAuthToken();
+    if (!token) {
+      setActionError('Please login again to view order details.');
+      return;
+    }
+    setDetailsLoading(true);
+    fetch(`${API_BASE}/orders/${order.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to load order details');
+        }
+        setSelectedOrder(data);
+      })
+      .catch((err) => {
+        setActionError(err.message || 'Something went wrong while loading order details');
+      })
+      .finally(() => {
+        setDetailsLoading(false);
+      });
   };
 
   const closeDetails = () => {
@@ -224,6 +260,7 @@ const Orders = () => {
                       <thead>
                         <tr>
                           <th>Order ID</th>
+                          <th>Product</th>
                           <th>Date</th>
                           <th>Status</th>
                           <th>Payment</th>
@@ -255,9 +292,66 @@ const Orders = () => {
                           else if (paymentStatus === 'failed') paymentVariant = 'danger';
                           else if (paymentStatus === 'refunded') paymentVariant = 'warning';
 
+                          let firstItem = null;
+                          if (Array.isArray(order.items) && order.items.length > 0) {
+                            firstItem = order.items[0];
+                          }
+
+                          let productLink = null;
+                          let productName = '';
+                          let productImageUrl = null;
+                          if (firstItem) {
+                            const product = firstItem.product;
+                            const productId = product?.id;
+                            productName =
+                              product?.name || firstItem.product_name || 'Product';
+                            if (
+                              product &&
+                              Array.isArray(product.images) &&
+                              product.images.length > 0
+                            ) {
+                              const primaryImage =
+                                product.images.find((img) => img.is_primary) ||
+                                product.images[0];
+                              if (primaryImage && primaryImage.image_url) {
+                                productImageUrl = buildImageUrl(primaryImage.image_url);
+                              }
+                            }
+                            if (productId) {
+                              productLink = `/product/${productId}`;
+                            }
+                          }
+
                           return (
                             <tr key={order.id}>
-                              <td>#{order.id}</td>
+                              <td>{order.id}</td>
+                              <td>
+                                {productLink ? (
+                                  <Link
+                                    to={productLink}
+                                    className="d-inline-flex align-items-center text-decoration-none text-dark"
+                                  >
+                                    {productImageUrl && (
+                                      <img
+                                        src={productImageUrl}
+                                        alt={productName}
+                                        style={{
+                                          width: 40,
+                                          height: 40,
+                                          objectFit: 'cover',
+                                          borderRadius: 4,
+                                          marginRight: 8,
+                                        }}
+                                      />
+                                    )}
+                                    <span className="text-truncate" style={{ maxWidth: 160 }}>
+                                      {productName}
+                                    </span>
+                                  </Link>
+                                ) : (
+                                  <span className="text-muted small">-</span>
+                                )}
+                              </td>
                               <td>{dateStr}</td>
                               <td className="text-capitalize">{order.status || 'pending'}</td>
                               <td>
@@ -306,6 +400,12 @@ const Orders = () => {
         <Modal.Body>
           {selectedOrder && (
             <>
+              {detailsLoading && (
+                <div className="text-center mb-3">
+                  <Spinner animation="border" role="status" size="sm" className="me-2" />
+                  <span>Loading order details...</span>
+                </div>
+              )}
               <Row className="mb-3">
                 <Col md={6}>
                   <div className="mb-2">
@@ -381,6 +481,7 @@ const Orders = () => {
                     <Table striped hover size="sm" className="align-middle">
                       <thead>
                         <tr>
+                          <th>Image</th>
                           <th>Product</th>
                           <th>Qty</th>
                           <th>Price (₹)</th>
@@ -392,8 +493,31 @@ const Orders = () => {
                           selectedOrder.items.map((item) => {
                             const price = Number(item.price || 0);
                             const qty = Number(item.quantity || 0);
+                            let imageUrl = null;
+                            const product = item.product;
+                            if (product && Array.isArray(product.images) && product.images.length > 0) {
+                              const primaryImage =
+                                product.images.find((img) => img.is_primary) || product.images[0];
+                              if (primaryImage && primaryImage.image_url) {
+                                imageUrl = buildImageUrl(primaryImage.image_url);
+                              }
+                            }
                             return (
                               <tr key={item.id}>
+                                <td>
+                                  {imageUrl && (
+                                    <img
+                                      src={imageUrl}
+                                      alt={item.product_name || 'Product'}
+                                      style={{
+                                        width: 40,
+                                        height: 40,
+                                        objectFit: 'cover',
+                                        borderRadius: 4,
+                                      }}
+                                    />
+                                  )}
+                                </td>
                                 <td>{item.product_name || 'Product'}</td>
                                 <td>{qty}</td>
                                 <td>{price.toFixed(2)}</td>
@@ -403,7 +527,7 @@ const Orders = () => {
                           })
                         ) : (
                           <tr>
-                            <td colSpan={4} className="text-center text-muted">
+                            <td colSpan={5} className="text-center text-muted">
                               No items found for this order.
                             </td>
                           </tr>
