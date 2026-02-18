@@ -270,7 +270,6 @@ const UserProfile = () => {
                           value={businessName}
                           onChange={(event) => setBusinessName(event.target.value)}
                           placeholder="Enter your company name"
-                          disabled={profileType !== 'wholesaler'}
                         />
                       </Form.Group>
                     </Col>
@@ -282,7 +281,6 @@ const UserProfile = () => {
                           value={gstNumber}
                           onChange={(event) => setGstNumber(event.target.value)}
                           placeholder="Enter your GST number"
-                          disabled={profileType !== 'wholesaler'}
                         />
                       </Form.Group>
                     </Col>
@@ -326,7 +324,6 @@ const UserProfile = () => {
                           value={city}
                           onChange={(event) => setCity(event.target.value)}
                           placeholder="Enter your city"
-                          disabled={profileType !== 'wholesaler'}
                         />
                       </Form.Group>
                       <Form.Group controlId="profileState" className="mt-2">
@@ -336,7 +333,6 @@ const UserProfile = () => {
                           value={stateName}
                           onChange={(event) => setStateName(event.target.value)}
                           placeholder="Enter your state"
-                          disabled={profileType !== 'wholesaler'}
                         />
                       </Form.Group>
                       <Form.Group controlId="profilePincode" className="mt-2">
@@ -346,7 +342,6 @@ const UserProfile = () => {
                           value={pincode}
                           onChange={(event) => setPincode(event.target.value)}
                           placeholder="Enter your pincode"
-                          disabled={profileType !== 'wholesaler'}
                         />
                       </Form.Group>
                     </Col>
