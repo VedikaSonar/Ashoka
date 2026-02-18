@@ -322,6 +322,16 @@ const Home = () => {
       return;
     }
     try {
+      const clearResponse = await fetch(`${API_BASE}/cart/clear`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!clearResponse.ok) {
+        const clearData = await clearResponse.json();
+        throw new Error(clearData.message || 'Failed to prepare cart for buy now');
+      }
       const response = await fetch(`${API_BASE}/cart/add`, {
         method: 'POST',
         headers: {
