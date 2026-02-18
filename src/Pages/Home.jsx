@@ -386,7 +386,7 @@ const Home = () => {
           }),
         );
       }
-      navigate('/checkout?mode=instant');
+      navigate('/checkout?mode=instant&qty=1');
     } catch (err) {
       setActionError(err.message || 'Something went wrong while processing buy now');
     }

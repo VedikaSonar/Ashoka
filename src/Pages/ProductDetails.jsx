@@ -412,7 +412,7 @@ const ProductDetails = () => {
           }),
         );
       }
-      navigate('/checkout?mode=instant');
+      navigate(`/checkout?mode=instant&qty=${quantityToUse}`);
     } catch (err) {
       setActionError(err.message || 'Something went wrong while processing buy now');
     }

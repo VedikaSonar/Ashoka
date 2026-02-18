@@ -18,6 +18,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get('mode') || 'cart';
+  const quantityParam = searchParams.get('qty');
   const isInstant = mode === 'instant';
   const [cart, setCart] = useState(null);
   const [instantItem, setInstantItem] = useState(null);
@@ -65,7 +66,7 @@ const Checkout = () => {
           throw new Error('Instant purchase data is invalid. Please try again.');
         }
         const pid = parsed.productId || parsed.product_id;
-        const qtyRaw = parsed.quantity || 1;
+        const qtyRaw = quantityParam || parsed.quantity || 1;
         const qty = Number.isFinite(Number(qtyRaw)) && Number(qtyRaw) > 0 ? Number(qtyRaw) : 1;
         if (!pid) {
           throw new Error('Instant purchase item is missing. Please try again.');
@@ -124,7 +125,7 @@ const Checkout = () => {
     } else {
       fetchCart();
     }
-  }, [navigate, isInstant]);
+  }, [navigate, isInstant, quantityParam]);
 
   useEffect(() => {
     if (typeof localStorage === 'undefined') return;
@@ -177,6 +178,14 @@ const Checkout = () => {
       ]
     : [];
   const items = isInstant ? instantItems : cartItems;
+  const itemsCount = isInstant
+    ? instantItem
+      ? instantItem.quantity
+      : 0
+    : cartItems.reduce(
+        (sum, item) => sum + (Number.isFinite(Number(item.quantity)) ? Number(item.quantity) : 0),
+        0,
+      );
   const subtotal = isInstant
     ? instantItem
       ? instantItem.price * instantItem.quantity
@@ -303,7 +312,11 @@ const Checkout = () => {
                 }),
               );
             }
-            navigate('/orders');
+            if (verifyData && verifyData.order_id) {
+              navigate(`/order-confirmation?orderId=${verifyData.order_id}`);
+            } else {
+              navigate('/orders');
+            }
           } catch (err) {
             setError(err.message || 'Payment verification failed');
           } finally {
@@ -398,7 +411,11 @@ const Checkout = () => {
       if (isInstant && typeof localStorage !== 'undefined') {
         localStorage.removeItem('instantPurchase');
       }
-      navigate('/orders');
+      if (data && data.orderId) {
+        navigate(`/order-confirmation?orderId=${data.orderId}`);
+      } else {
+        navigate('/orders');
+      }
     } catch (err) {
       setError(err.message || 'Something went wrong while placing order');
     } finally {
@@ -435,7 +452,7 @@ const Checkout = () => {
             </div>
             <div className="checkout-summary-totals">
               <span className="checkout-summary-label">Items:</span>
-              <span className="checkout-summary-value">{items.length}</span>
+              <span className="checkout-summary-value">{itemsCount}</span>
               <span className="checkout-summary-divider">•</span>
               <span className="checkout-summary-label">Total:</span>
               <span className="checkout-summary-value">₹{total.toFixed(2)}</span>
