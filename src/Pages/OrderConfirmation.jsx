@@ -104,7 +104,8 @@ const OrderConfirmation = () => {
                     <CheckCircle2 size={64} className="text-success mb-3" />
                     <h2 className="fw-bold mb-2">Thank you! Your order is confirmed.</h2>
                     <p className="text-muted mb-1">
-                      Your order number is <strong>#{order.id}</strong>.
+                      Your order number is{' '}
+                      <strong>{order.display_order_id || order.public_id || `#${order.id}`}</strong>.
                     </p>
                     <p className="text-muted mb-0">
                       You will receive updates when your order status changes.
@@ -119,7 +120,9 @@ const OrderConfirmation = () => {
                     <h5 className="mb-3">Order Summary</h5>
                     <div className="d-flex justify-content-between mb-2">
                       <span>Order Number</span>
-                      <span className="fw-bold">#{order.id}</span>
+                      <span className="fw-bold">
+                        {order.display_order_id || order.public_id || `#${order.id}`}
+                      </span>
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span>Placed On</span>
@@ -207,4 +210,3 @@ const OrderConfirmation = () => {
 };
 
 export default OrderConfirmation;
-

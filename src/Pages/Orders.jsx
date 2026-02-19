@@ -322,9 +322,11 @@ const Orders = () => {
                             }
                           }
 
+                          const publicId = order.display_order_id || order.public_id || order.id;
+
                           return (
                             <tr key={order.id}>
-                              <td>{order.id}</td>
+                              <td>{publicId}</td>
                               <td>
                                 {productLink ? (
                                   <Link
