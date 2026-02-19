@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Table, Button, Alert, Pagination } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
 import './Product.css';
 
@@ -22,6 +22,12 @@ const Cart = () => {
   const [message, setMessage] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [customerType, setCustomerType] = useState('Retail Customer');
+  const [couponCode, setCouponCode] = useState('');
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [loadingCoupons, setLoadingCoupons] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (typeof localStorage === 'undefined') return;
@@ -32,6 +38,89 @@ const Cart = () => {
       setCustomerType('Retail Customer');
     }
   }, []);
+
+  const loadActiveCoupons = async () => {
+    setLoadingCoupons(true);
+    try {
+      const response = await fetch(`${API_BASE}/coupons/public/active`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to load coupons');
+      }
+      const list = Array.isArray(data.coupons) ? data.coupons : [];
+      setAvailableCoupons(list);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingCoupons(false);
+    }
+  };
+
+  useEffect(() => {
+    loadActiveCoupons();
+  }, []);
+
+  const handleApplyCoupon = async () => {
+    const token = getAuthToken();
+    if (!token) {
+      setError('Please login to apply coupon');
+      return;
+    }
+    if (!couponCode.trim()) {
+      setError('Please enter a coupon code');
+      return;
+    }
+    setApplyingCoupon(true);
+    setError('');
+    setMessage('');
+    try {
+      const response = await fetch(`${API_BASE}/coupons/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ code: couponCode }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to validate coupon');
+      }
+      if (!data.valid) {
+        setAppliedCoupon(null);
+        const msg = data.message || 'Coupon is not valid for your cart';
+        setError(msg);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('app:toast', {
+              detail: { message: msg, variant: 'danger' },
+            }),
+          );
+        }
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('appliedCouponCode');
+        }
+        return;
+      }
+      setAppliedCoupon(data);
+      const msg = data.message || 'Coupon applied successfully';
+      setMessage(msg);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('app:toast', {
+            detail: { message: msg, variant: 'success' },
+          }),
+        );
+      }
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('appliedCouponCode', data.code);
+      }
+    } catch (err) {
+      setError(err.message || 'Something went wrong while applying coupon');
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
 
   const loadCart = async () => {
     const token = getAuthToken();
@@ -215,7 +304,15 @@ const Cart = () => {
                     </thead>
                     <tbody>
                       {currentItems.map((item) => (
-                        <tr key={item.id}>
+                        <tr
+                          key={item.id}
+                          className="cart-row-clickable cursor-pointer"
+                          onClick={() => {
+                            if (item.product_id) {
+                              navigate(`/product/${item.product_id}`);
+                            }
+                          }}
+                        >
                           <td className="text-center">
                             <div className="cart-img-wrapper mx-auto">
                               {item.product && item.product.images && item.product.images.length ? (
@@ -254,12 +351,13 @@ const Cart = () => {
                               <button
                                 type="button"
                                 className="qty-btn"
-                                onClick={() =>
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   handleQuantityChange(
                                     item,
-                                    item.quantity > 1 ? item.quantity - 1 : 1,
-                                  )
-                                }
+                                    item.quantity > 1 ? item.quantity - 1 : 1
+                                  );
+                                }}
                               >
                                 −
                               </button>
@@ -267,9 +365,10 @@ const Cart = () => {
                               <button
                                 type="button"
                                 className="qty-btn"
-                                onClick={() =>
-                                  handleQuantityChange(item, item.quantity + 1)
-                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleQuantityChange(item, item.quantity + 1);
+                                }}
                               >
                                 +
                               </button>
@@ -282,7 +381,10 @@ const Cart = () => {
                             <button
                               type="button"
                               className="cart-remove-btn"
-                              onClick={() => handleRemoveItem(item)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                return handleRemoveItem(item);
+                              }}
                             >
                               <Trash2 size={16} />
                             </button>
@@ -336,11 +438,16 @@ const Cart = () => {
                       type="text"
                       className="form-control cart-coupon-input"
                       placeholder="Coupon code"
-                      disabled
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
                     />
                     <div className="d-flex gap-2">
-                      <Button variant="outline-secondary" disabled>
-                        Apply Coupon
+                      <Button
+                        variant="outline-secondary"
+                        onClick={handleApplyCoupon}
+                        disabled={!couponCode.trim() || applyingCoupon}
+                      >
+                        {applyingCoupon ? 'Applying...' : 'Apply Coupon'}
                       </Button>
                       <Button variant="outline-secondary" onClick={loadCart}>
                         Update Cart
@@ -350,22 +457,100 @@ const Cart = () => {
                 </Col>
               </Row>
 
+              {availableCoupons.length > 0 && (
+                <Row className="justify-content-center mb-4">
+                  <Col lg={6}>
+                    <div className="cart-coupon-box">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <h6 className="mb-0">Available Coupons</h6>
+                        {loadingCoupons && (
+                          <span className="small text-muted">Loading...</span>
+                        )}
+                      </div>
+                      {availableCoupons.map((c) => (
+                        <div
+                          key={c.id}
+                          className="d-flex justify-content-between align-items-center py-2 border-top"
+                        >
+                          <div>
+                            <div className="fw-semibold">{c.code}</div>
+                            <div className="small text-muted">
+                              {c.discount_type === 'percentage'
+                                ? `${c.discount_value}% off`
+                                : `Flat ₹${Number(
+                                    c.discount_value || 0,
+                                  ).toFixed(0)} off`}
+                              {c.min_order_value &&
+                                Number(c.min_order_value) > 0 &&
+                                ` • Min order ₹${Number(
+                                  c.min_order_value,
+                                ).toFixed(0)}`}
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline-success"
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                if (navigator.clipboard?.writeText) {
+                                  await navigator.clipboard.writeText(c.code);
+                                  setCouponCode(c.code);
+                                  setMessage('Coupon code copied');
+                                } else {
+                                  setCouponCode(c.code);
+                                }
+                              } catch {
+                                setCouponCode(c.code);
+                              }
+                            }}
+                          >
+                            Copy
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </Col>
+                </Row>
+              )}
+
               <Row className="justify-content-center">
                 <Col lg={4}>
                   <div className="cart-summary-box">
                     <h5 className="mb-3">Cart Totals</h5>
-                    <div className="d-flex justify-content-between mb-2">
-                      <span>Subtotal</span>
-                      <span className="fw-bold">
-                        ₹{cart ? Number(cart.total || 0).toFixed(2) : '0.00'}
-                      </span>
-                    </div>
-                    <div className="d-flex justify-content-between mb-3">
-                      <span>Total</span>
-                      <span className="fw-bold">
-                        ₹{cart ? Number(cart.total || 0).toFixed(2) : '0.00'}
-                      </span>
-                    </div>
+                    {(() => {
+                      const baseTotal = cart ? Number(cart.total || 0) : 0;
+                      const subtotal = appliedCoupon
+                        ? Number(appliedCoupon.subtotal || baseTotal)
+                        : baseTotal;
+                      const discountAmount = appliedCoupon
+                        ? Number(appliedCoupon.discount_amount || 0)
+                        : 0;
+                      const finalTotal = appliedCoupon
+                        ? Number(appliedCoupon.total_after_discount || subtotal)
+                        : subtotal;
+                      return (
+                        <>
+                          <div className="d-flex justify-content-between mb-2">
+                            <span>Subtotal</span>
+                            <span className="fw-bold">
+                              ₹{subtotal.toFixed(2)}
+                            </span>
+                          </div>
+                          {appliedCoupon && discountAmount > 0 && (
+                            <div className="d-flex justify-content-between mb-2 text-success">
+                              <span>Discount ({appliedCoupon.code})</span>
+                              <span>-₹{discountAmount.toFixed(2)}</span>
+                            </div>
+                          )}
+                          <div className="d-flex justify-content-between mb-3">
+                            <span>Total</span>
+                            <span className="fw-bold">
+                              ₹{finalTotal.toFixed(2)}
+                            </span>
+                          </div>
+                        </>
+                      );
+                    })()}
                     <Button as={Link} to="/checkout" variant="success" className="w-100">
                       Proceed to Checkout
                     </Button>

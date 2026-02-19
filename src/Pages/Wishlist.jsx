@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Alert, Button, Table, Pagination, Badge } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, X, Heart } from 'lucide-react';
 import './Product.css';
 
@@ -46,6 +46,7 @@ const Wishlist = () => {
   const [message, setMessage] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [customerType, setCustomerType] = useState('Retail Customer');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchWishlistProducts = async () => {
@@ -351,7 +352,15 @@ const Wishlist = () => {
                         unitPrice = 0;
                       }
                       return (
-                        <tr key={product.id}>
+                        <tr
+                          key={product.id}
+                          className="cart-row-clickable cursor-pointer"
+                          onClick={() => {
+                            if (product.id) {
+                              navigate(`/product/${product.id}`);
+                            }
+                          }}
+                        >
                           <td className="text-center">
                             <div className="cart-img-wrapper mx-auto">
                               <Link to={`/product/${product.id}`}>
@@ -388,7 +397,10 @@ const Wishlist = () => {
                               <Button
                                 variant="success"
                                 size="sm"
-                                onClick={() => handleAddToCart(product.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  return handleAddToCart(product.id);
+                                }}
                               >
                                 <ShoppingBag size={14} className="me-1" />
                                 Add to Cart
@@ -396,7 +408,10 @@ const Wishlist = () => {
                               <button
                                 type="button"
                                 className="cart-remove-btn"
-                                onClick={() => handleRemove(product.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  return handleRemove(product.id);
+                                }}
                               >
                                 <X size={16} />
                               </button>

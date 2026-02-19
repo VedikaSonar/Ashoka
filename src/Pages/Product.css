@@ -333,6 +333,9 @@
 .wishlist-empty-icon svg {
   display: block;
 }
+.cart-row-clickable:hover {
+  background-color: #fafef3;
+}
 .product-detail-gallery {
   gap: 16px;
 }

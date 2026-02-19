@@ -39,6 +39,7 @@ const Checkout = () => {
   const [billingEmail, setBillingEmail] = useState('');
   const [billingPhone, setBillingPhone] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
+  const [appliedCouponCode, setAppliedCouponCode] = useState('');
   const [customerTypeLabel, setCustomerTypeLabel] = useState('Retail Customer');
 
   useEffect(() => {
@@ -166,6 +167,14 @@ const Checkout = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof localStorage === 'undefined') return;
+    const stored = localStorage.getItem('appliedCouponCode');
+    if (stored) {
+      setAppliedCouponCode(stored);
+    }
+  }, []);
+
   const cartItems = cart && Array.isArray(cart.items) ? cart.items : [];
   const instantItems = instantItem
     ? [
@@ -260,6 +269,7 @@ const Checkout = () => {
         body: JSON.stringify({
           shipping_address: shippingAddress,
           notes: orderNotes,
+          coupon_code: appliedCouponCode || undefined,
         }),
       });
       const createData = await createResponse.json();
@@ -386,6 +396,7 @@ const Checkout = () => {
             shipping_address: shippingAddress,
             payment_method: paymentMethod || 'cod',
             notes: orderNotes,
+            coupon_code: appliedCouponCode || undefined,
           };
       const response = await fetch(url, {
         method: 'POST',
