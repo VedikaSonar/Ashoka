@@ -40,6 +40,8 @@ const Checkout = () => {
   const [billingPhone, setBillingPhone] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
   const [appliedCouponCode, setAppliedCouponCode] = useState('');
+  const [couponSummary, setCouponSummary] = useState(null);
+  const [loadingCoupon, setLoadingCoupon] = useState(false);
   const [customerTypeLabel, setCustomerTypeLabel] = useState('Retail Customer');
 
   useEffect(() => {
@@ -175,6 +177,47 @@ const Checkout = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const validateAtCheckout = async () => {
+      if (!appliedCouponCode || !cart || isInstant) {
+        setCouponSummary(null);
+        return;
+      }
+      const token = getAuthToken();
+      if (!token) return;
+      setLoadingCoupon(true);
+      try {
+        const response = await fetch(`${API_BASE}/coupons/validate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ code: appliedCouponCode }),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.valid) {
+          setCouponSummary(null);
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem('appliedCouponCode');
+          }
+          return;
+        }
+        setCouponSummary({
+          code: data.code,
+          subtotal: Number(data.subtotal || 0),
+          discountAmount: Number(data.discount_amount || 0),
+          totalAfterDiscount: Number(data.total_after_discount || 0),
+        });
+      } catch {
+        setCouponSummary(null);
+      } finally {
+        setLoadingCoupon(false);
+      }
+    };
+    validateAtCheckout();
+  }, [appliedCouponCode, cart, isInstant]);
+
   const cartItems = cart && Array.isArray(cart.items) ? cart.items : [];
   const instantItems = instantItem
     ? [
@@ -199,11 +242,16 @@ const Checkout = () => {
     ? instantItem
       ? instantItem.price * instantItem.quantity
       : 0
-    : cart
-      ? Number(cart.total || 0)
-      : 0;
+    : couponSummary
+      ? couponSummary.subtotal
+      : cart
+        ? Number(cart.total || 0)
+        : 0;
   const shipping = 0;
-  const total = subtotal + shipping;
+  const discountAmount = couponSummary ? couponSummary.discountAmount : 0;
+  const total = couponSummary
+    ? couponSummary.totalAfterDiscount + shipping
+    : subtotal + shipping;
 
   const buildShippingAddress = () => {
     const lines = [];
@@ -679,6 +727,15 @@ const Checkout = () => {
                     <span>Cart Subtotal</span>
                     <span>₹{subtotal.toFixed(2)}</span>
                   </div>
+                  {couponSummary && discountAmount > 0 && (
+                    <div className="checkout-order-row d-flex justify-content-between text-success">
+                      <span>
+                        Discount ({couponSummary.code})
+                        {loadingCoupon && ' (checking...)'}
+                      </span>
+                      <span>-₹{discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="checkout-order-row d-flex justify-content-between">
                     <span>Shipping</span>
                     <span>₹{shipping.toFixed(2)}</span>
