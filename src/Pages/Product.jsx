@@ -340,7 +340,7 @@ const Product = () => {
   return (
     <div className="product-page">
       {/* Banner Section */}
-      <section className="product-banner text-center text-white py-5">
+      {/* <section className="product-banner text-center text-white py-5">
         <Container>
           <h1 className="banner-title display-4 fw-bold mb-3">Products</h1>
           <nav className="breadcrumb-nav d-flex justify-content-center align-items-center gap-2">
@@ -349,7 +349,7 @@ const Product = () => {
             <span className="active">Products</span>
           </nav>
         </Container>
-      </section>
+      </section> */}
 
       {/* Main Content Section */}
       <section className="product-content py-5">

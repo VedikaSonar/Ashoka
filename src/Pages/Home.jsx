@@ -8,6 +8,12 @@ import banner2 from '../assets/images/ashoka  banners 2.jpg';
 import banner3 from '../assets/images/ashoka  banners 3.jpg';
 import Footer from '../Components/Footer';
 import './Home.css';
+import bg from '../assets/images/bg.png';
+import fssaiLogo from '../assets/images/fassi logo.png';
+import keepCleanLogo from '../assets/images/keep clean logo.png';
+import makeInIndiaLogo from '../assets/images/make in india logo.png';
+import swachBharatLogo from '../assets/images/swach bharat.png';
+import foodManufacturingLogo from '../assets/images/food manufacturing.png';
 
 const API_BASE = 'http://127.0.0.1:5000/api';
 
@@ -184,7 +190,7 @@ const Home = () => {
     },
   ];
 
-  const testimonialsPerSlide = 3;
+  const [testimonialsPerSlide, setTestimonialsPerSlide] = useState(3);
   const testimonialSlides = [];
   for (let i = 0; i < testimonials.length; i += testimonialsPerSlide) {
     testimonialSlides.push(testimonials.slice(i, i + testimonialsPerSlide));
@@ -193,6 +199,22 @@ const Home = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
   const [testiIndex, setTestiIndex] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const updateSlides = () => {
+      const w = typeof window !== 'undefined' ? window.innerWidth : 1024;
+      if (w <= 576) {
+        setTestimonialsPerSlide(1);      // mobile: 1 card
+      } else if (w < 992) {
+        setTestimonialsPerSlide(2);      // tablet: 2 cards
+      } else {
+        setTestimonialsPerSlide(3);      // desktop: 3 cards
+      }
+    };
+    updateSlides();
+    window.addEventListener('resize', updateSlides, { passive: true });
+    return () => window.removeEventListener('resize', updateSlides);
+  }, []);
 
   useEffect(() => {
     const target = new Date();
@@ -570,9 +592,9 @@ const Home = () => {
               </Col>
             )}
             {!productsLoading && !productsError && products.map((product) => (
-              <Col key={product.id} lg={3} md={4} sm={6}>
-                <Link to={`/product/${product.id}`} className="text-decoration-none text-dark">
-                  <div className="product-card">
+              <Col key={product.id} lg={3} md={4} sm={6} className="d-flex">
+                <Link to={`/product/${product.id}`} className="text-decoration-none text-dark d-flex w-100">
+                  <div className="product-card d-flex flex-column w-100">
                     <div className="product-image-wrapper">
                       <div className="product-actions">
                         <button
@@ -801,7 +823,7 @@ const Home = () => {
               <Carousel.Item key={`testimonial-slide-${index}`}>
                 <Row className="g-4">
                   {slide.map((t, idx) => (
-                    <Col key={`${t.name}-${idx}`} lg={4} md={6}>
+                    <Col key={`${t.name}-${idx}`} lg={4} md={6} xs={12}>
                       <div className="testimonial-card">
                         <div className="stars">
                           {[...Array(4)].map((_, i) => (
@@ -822,6 +844,36 @@ const Home = () => {
               </Carousel.Item>
             ))}
           </Carousel>
+        </Container>
+      </section>
+      
+      <section
+        className="py-4"
+        style={{
+          backgroundImage: `url(${bg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <Container>
+          <Row className="g-5 justify-content-center align-items-center text-center py-4">
+            <Col xs="auto">
+              <img src={fssaiLogo} alt="FSSAI" style={{ height: 54, width: 'auto' }} />
+            </Col>
+            <Col xs="auto">
+              <img src={keepCleanLogo} alt="Keep Clean" style={{ height: 54, width: 'auto' }} />
+            </Col>
+            <Col xs="auto">
+              <img src={makeInIndiaLogo} alt="Make in India" style={{ height: 54, width: 'auto' }} />
+            </Col>
+            <Col xs="auto">
+              <img src={swachBharatLogo} alt="Swachh Bharat" style={{ height: 54, width: 'auto' }} />
+            </Col>
+            <Col xs="auto">
+              <img src={foodManufacturingLogo} alt="Food Manufacturing" style={{ height: 54, width: 'auto' }} />
+            </Col>
+          </Row>
         </Container>
       </section>
       

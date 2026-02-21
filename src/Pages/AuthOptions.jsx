@@ -28,10 +28,10 @@ const AuthOptions = () => {
                 For regular customers shopping on Ashoka.
               </p>
               <div className="auth-card-actions">
-                <Button as={Link} to="/login" className="auth-primary-btn">
+                <Button as={Link} to="/login" className="auth-primary-btn text-center">
                   User Login
                 </Button>
-                <Button as={Link} to="/register" className="auth-secondary-btn">
+                <Button as={Link} to="/register" className="auth-secondary-btn text-center">
                   User Registration
                 </Button>
               </div>
@@ -49,10 +49,10 @@ const AuthOptions = () => {
                 For wholesale partners and bulk purchasing.
               </p>
               <div className="auth-card-actions">
-                <Button as={Link} to="/wholesaler-login" className="auth-primary-btn">
+                <Button as={Link} to="/wholesaler-login" className="auth-primary-btn text-center">
                   Wholesaler Login
                 </Button>
-                <Button as={Link} to="/wholesaler-register" className="auth-secondary-btn">
+                <Button as={Link} to="/wholesaler-register" className="auth-secondary-btn text-center">
                   Wholesaler Registration
                 </Button>
               </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Container, Nav, Navbar as BootstrapNavbar, NavDropdown, Button, Alert } from 'react-bootstrap';
-import { Phone, ChevronDown, Heart, ShoppingBag, Menu, Salad, User } from 'lucide-react';
+import { Phone, ChevronDown, Heart, ShoppingBag, Menu, Salad, User, Search } from 'lucide-react';
 import logo from '../assets/images/ashoka logo .png';
 import './Navbar.css';
 
@@ -48,6 +48,8 @@ const Navbar = () => {
   const [cartCount, setCartCount] = useState(getCartCountFromStorage);
   const [toast, setToast] = useState(null);
   const toastTimerRef = useRef(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const searchWrapRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -210,6 +212,16 @@ const Navbar = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchWrapRef.current && !searchWrapRef.current.contains(e.target)) {
+        setShowSearch(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const getInitial = (value) => {
     if (!value || typeof value !== 'string') return '';
     return value.trim().charAt(0).toUpperCase();
@@ -274,6 +286,17 @@ const Navbar = () => {
           <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />
           
           <BootstrapNavbar.Collapse id="basic-navbar-nav">
+            <button
+              type="button"
+              aria-label="Close Menu"
+              className="navbar-close d-lg-none"
+              onClick={() => {
+                const toggler = document.querySelector('.main-nav .navbar-toggler, .navbar .navbar-toggler');
+                if (toggler) toggler.click();
+              }}
+            >
+              &times;
+            </button>
             <Nav className="mx-auto gap-lg-4">
               <Nav.Link 
                 as={Link} 
@@ -303,6 +326,31 @@ const Navbar = () => {
             </Nav>
 
             <div className="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+              <div className="position-relative" ref={searchWrapRef}>
+                <button
+                  type="button"
+                  aria-label="Search"
+                  className="btn p-0 border-0 bg-transparent text-dark d-flex align-items-center"
+                  onClick={() => setShowSearch((s) => !s)}
+                >
+                  <Search size={24} />
+                </button>
+                {showSearch && (
+                  <div
+                    className="position-absolute"
+                    style={{ top: '125%', right: 0, zIndex: 1100, width: 260 }}
+                  >
+                    <div className="card shadow-sm p-2">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Search products..."
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
               <Link
                 to="/wishlist"
                 className="position-relative cursor-pointer text-decoration-none text-dark"

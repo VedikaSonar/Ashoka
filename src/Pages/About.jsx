@@ -1,120 +1,145 @@
-import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
-import productImg from '../assets/images/product 5.png';
-import './About.css';
+import React from "react";
+import { Container, Row, Col } from "react-bootstrap";
+import "./About.css";
+import productImg from "../assets/images/about us img.png";
+import aboutbg from "../assets/images/aboutbg.png";
+import bg from "../assets/images/bg.png";
+import fssaiLogo from "../assets/images/fassi logo.png";
+import keepCleanLogo from "../assets/images/keep clean logo.png";
+import makeInIndiaLogo from "../assets/images/make in india logo.png";
+import swachBharatLogo from "../assets/images/swach bharat.png";
+import foodManufacturingLogo from "../assets/images/food manufacturing.png";
 
-const About = () => {
+const journeySteps = [
+  { icon: "🌱", title: "Founded", desc: "Founded with a vision of purity" },
+  { icon: "🏭", title: "Modern Facility", desc: "Modern manufacturing setup" },
+  { icon: "📦", title: "Expanded Range", desc: "Expanded product range" },
+  { icon: "🏆", title: "Trusted Brand", desc: "Trusted by thousands of customers" },
+];
+
+const diffCards = [
+  { icon: "🌾", title: "Farm-Sourced Ingredients", desc: "Best grains harvested from top farms" },
+  { icon: "🔍", title: "Quality Tested & Certified", desc: "Rigorous quality checks for purity" },
+  { icon: "⚙️", title: "Modern Processing", desc: "Advanced facilities ensure hygiene" },
+  { icon: "💚", title: "Customer-First Approach", desc: "Your needs and feedback matter most." },
+];
+
+export default function About() {
   return (
     <div className="about-page">
-      <section className="about-hero-strip">
-        <Container>
-          <Row className="align-items-center">
-            <Col lg={6} className="mb-4 mb-lg-0">
-              <div className="about-hero-text-block">
-                <p className="about-hero-quote">
-                  “Celebrating <span className="highlight">Health</span>
-                  <br />
-                  from decades”
-                </p>
-              </div>
-            </Col>
-            <Col lg={6}>
-              <div className="about-hero-image-block">
-                <div className="about-hero-people" />
-              </div>
-            </Col>
-          </Row>
-        </Container>
+      <section
+        className="hero"
+        style={{
+          backgroundImage: `url(${aboutbg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+
+      {/* ── Who We Are ── */}
+      <section className="who">
+        <div className="who__text">
+          <h2 className="section-title">Who We Are</h2>
+          <p>
+            Ashoka is a trusted name in nutritious food products, committed to
+            bringing <strong>purity from farms</strong> to your kitchen. Our
+            priority is transparency, quality sourcing, and uncompromising hygiene.
+          </p>
+          <p className="who__tagline">
+            <strong>We believe good food</strong> builds strong families.
+          </p>
+        </div>
+        <div className="who__imgs">
+          <div className="who__img-main">
+            <img
+              src={productImg}
+              alt="Farmers"
+            />
+          </div>
+         
+        </div>
       </section>
 
-      <section className="about-principles-section">
-        <Container>
-          <h2 className="about-section-heading text-center">Principles</h2>
-          <div className="about-principles-text">
+      {/* ── Our Journey ── */}
+      <section className="journey">
+        <h2 className="section-title">Our Journey</h2>
+        <div className="journey__track">
+          <div className="journey__line" />
+          {journeySteps.map((s, i) => (
+            <div className="journey__step" key={i}>
+              <div className="journey__circle">{s.icon}</div>
+              <h4 className="journey__step-title">{s.title}</h4>
+              <p className="journey__step-desc">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="vm">
+        <h2 className="section-title with-line">Vision & Mission</h2>
+        <div className="vm__grid">
+          <div className="vm__card">
+            <h3 className="vm__title">Vision</h3>
             <p>
-              Quality food products require unwavering dedication to quality at every level of
-              operation – from inspecting wheat and buying it, through transport, storage,
-              processing, packaging and distribution. Our decades of experience in wheat and wheat
-              products have taught us that the journey is a never ending one, there are always new
-              facts to learn, new practices to implement, and more sophisticated and productive
-              machinery to install.
-            </p>
-            <p>
-              We pride ourselves in being open to learning, willing to change, eager to verify – as
-              long as we believe these efforts will result in higher quality products that are
-              meaningful to our consumers.
-            </p>
-            <p>
-              Recognising that consumer expectations, too, are always changing, a key part of our
-              management effort is to be in constant touch with our customers. Our organization and
-              delivery systems are designed to ensure that this is built into our way of being.
+              To be India’s most trusted food products brand, connecting homes with pure,
+              naturally processed ingredients that nourish families every day.
             </p>
           </div>
-        </Container>
+          <div className="vm__card">
+            <h3 className="vm__title">Mission</h3>
+            <ul className="vm__list">
+              <li>Adopt rigorous sourcing and quality practices.</li>
+              <li>Maintain hygienic processing and modern packaging.</li>
+              <li>Continuously improve with a customer‑first mindset.</li>
+            </ul>
+          </div>
+        </div>
       </section>
 
-      <section className="about-vision-mission-section">
-        <Container>
-          <Row className="g-4 align-items-start">
-            <Col lg={5}>
-              <div className="about-grain-image-wrap">
-                <img src={productImg} alt="Grains in hands" className="about-grain-image" />
-              </div>
-            </Col>
-            <Col lg={7}>
-              <div className="about-vision-block">
-                <h3 className="about-subheading">Vision</h3>
-                <h4 className="about-vision-title">“TO BE FINEST FOOD PRODUCTS BRAND IN INDIA”</h4>
-                <p>
-                  To become a leading food providing brand in India. We aspire to motivate people to
-                  connect to natural food ingredients that cause no harm to the body as well as the
-                  environment. We solely promote health through our products and wish to keep
-                  delivering great-tasting, healthy, naturally processed food to every home.
-                </p>
-              </div>
+      {/* ── What Makes Ashoka Different ── */}
+      <section className="diff">
+        <h2 className="section-title with-line">What Makes Ashoka Different</h2>
+        <div className="diff__grid">
+          {diffCards.map((c, i) => (
+            <div className="diff__card" key={i}>
+              <div className="diff__icon">{c.icon}</div>
+              <h4>{c.title}</h4>
+              <p>{c.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-              <div className="about-mission-block">
-                <h3 className="about-subheading">Mission</h3>
-                <p>
-                  We aim to adopt the international practices of procurement, processing, and
-                  packaging of wheat products and combine them with the highest standards of honesty
-                  and fairness. Our brand has become one of the most sought after brands of food
-                  products available in the market. It is the result of hard work, consistency, and
-                  dedication that we have managed to follow from decades.
-                </p>
-                <p>
-                  As a result, we have brought a dramatic change in certain aspects of flour milling
-                  industry in India. We are driven by a strong set of shared values and beliefs that
-                  practices need to undergo a consistent change in order to match the need of time.
-                  Our organizational culture enmeshes with great values and we have sustained it
-                  ever since.
-                </p>
-              </div>
+      <section
+        className="py-4"
+        style={{
+          backgroundImage: `url(${bg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <Container>
+          <Row className="g-5 justify-content-center align-items-center text-center py-4">
+            <Col xs="auto">
+              <img src={fssaiLogo} alt="FSSAI" style={{ height: 54, width: "auto" }} />
+            </Col>
+            <Col xs="auto">
+              <img src={keepCleanLogo} alt="Keep Clean" style={{ height: 54, width: "auto" }} />
+            </Col>
+            <Col xs="auto">
+              <img src={makeInIndiaLogo} alt="Make in India" style={{ height: 54, width: "auto" }} />
+            </Col>
+            <Col xs="auto">
+              <img src={swachBharatLogo} alt="Swachh Bharat" style={{ height: 54, width: "auto" }} />
+            </Col>
+            <Col xs="auto">
+              <img src={foodManufacturingLogo} alt="Food Manufacturing" style={{ height: 54, width: "auto" }} />
             </Col>
           </Row>
         </Container>
       </section>
 
-      <section className="about-certification-strip">
-        <Container>
-          <Row className="justify-content-center g-3">
-            <Col xs={6} md={2}>
-              <div className="about-cert-badge">ISO 22000</div>
-            </Col>
-            <Col xs={6} md={2}>
-              <div className="about-cert-badge">ISO 9001</div>
-            </Col>
-            <Col xs={6} md={2}>
-              <div className="about-cert-badge">FSSAI</div>
-            </Col>
-            <Col xs={6} md={2}>
-              <div className="about-cert-badge">FSSC 22000</div>
-            </Col>
-          </Row>
-        </Container>
-      </section>
     </div>
   );
-};
-
-export default About;
+}

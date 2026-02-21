@@ -9,6 +9,18 @@
   font-weight: 800;
   color: #222;
   margin-bottom: 8px;
+  position: relative;
+}
+
+.auth-title::after {
+  content: '';
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 10px;
+  width: 60px;
+  height: 2px;
+  background: #7A3B10;
+  opacity: 0.35;
 }
 
 .auth-subtitle {
@@ -39,7 +51,7 @@
 
 .auth-card-title {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 800;
   color: #222;
   margin-bottom: 6px;
 }
@@ -63,6 +75,12 @@
   font-weight: 700;
   font-size: 14px;
   padding: 10px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 16px rgba(139, 195, 74, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .auth-primary-btn:hover {
@@ -76,6 +94,11 @@
   font-weight: 600;
   font-size: 14px;
   padding: 10px 0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .auth-secondary-btn:hover {

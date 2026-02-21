@@ -379,8 +379,8 @@
 }
 
 .product-detail-main-img img {
-  max-height: 100%;
-  width: auto;
+  height: 90%;
+  width: 300px;
 }
 
 .badge-detail-status {
