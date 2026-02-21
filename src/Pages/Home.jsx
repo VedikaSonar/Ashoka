@@ -679,7 +679,7 @@ const Home = () => {
                 <div className="offer-content">
                   <span className="offer-subtitle">GET 30% OFF</span>
                   <h3 className="offer-title">Fresh Vegetables</h3>
-                  <Button className="offer-btn">
+                  <Button className="offer-btn" onClick={() => navigate('/shop')}>
                     BUY NOW <ChevronRight size={16} />
                   </Button>
                 </div>
@@ -691,7 +691,7 @@ const Home = () => {
                 <div className="offer-content">
                   <span className="offer-subtitle">Limited Offer</span>
                   <h3 className="offer-title">Don't Miss 25% Off On All Fruits</h3>
-                  <Button className="offer-btn">
+                  <Button className="offer-btn" onClick={() => navigate('/shop')}>
                     BUY NOW <ChevronRight size={16} />
                   </Button>
                 </div>
